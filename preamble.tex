@@ -1,0 +1,85 @@
+\usepackage[match]{luatexja-fontspec}
+\setmainfont{Times New Roman}
+\setmainjfont[
+  BoldFont={MS Mincho},
+  BoldFeatures={FakeBold=2}
+]{MS Mincho}
+
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{1\baselineskip}{1\baselineskip}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  \fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
+}
+
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{etoolbox}
+\AtBeginEnvironment{figure}{\centering}
+\AtBeginEnvironment{table}{\centering}
+\setlength{\LTleft}{\fill}
+\setlength{\LTright}{\fill}
+
+\usepackage[justification=centering]{caption}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=bottom}
+
+\usepackage{luatexja-ruby}
+\newsavebox{\kanbunbasebox}
+\newsavebox{\kanbunrubybox}
+\newsavebox{\kanbunkaeribox}
+\newsavebox{\kanbunokuribox}
+\newcommand{\kanbunsidefont}{\fontsize{7pt}{7pt}\selectfont}
+\newcommand{\kanbunifempty}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
+\newcommand{\kanbun}[4]{%
+  \leavevmode
+  \begingroup
+  \sbox{\kanbunbasebox}{#1}%
+  \sbox{\kanbunrubybox}{\ruby{#1}{#2}}%
+  \kanbunifempty{#3#4}{%
+    \usebox{\kanbunrubybox}%
+  }{%
+    \sbox{\kanbunkaeribox}{{\kanbunsidefont #4}}%
+    \sbox{\kanbunokuribox}{{\kanbunsidefont #3}}%
+    \dimen0=\wd\kanbunkaeribox
+    \ifdim\wd\kanbunokuribox>\dimen0
+      \dimen0=\wd\kanbunokuribox
+    \fi
+    \ifdim\dimen0<0.35\zw
+      \dimen0=0.35\zw
+    \fi
+    \hbox{%
+      \usebox{\kanbunrubybox}%
+      \kern0.10\zw%
+      \hbox to \dimen0{%
+        \kanbunifempty{#4}{}{%
+          \rlap{%
+            \raisebox{\dimexpr\ht\kanbunbasebox-.5\ht\kanbunkaeribox+.5\dp\kanbunkaeribox-0.35ex\relax}[0pt][0pt]{%
+              \hbox to \dimen0{\hss\usebox{\kanbunkaeribox}\hss}%
+            }%
+          }%
+        }%
+        \kanbunifempty{#3}{}{%
+          \rlap{%
+            \raisebox{\dimexpr-\dp\kanbunbasebox-.5\ht\kanbunokuribox+.5\dp\kanbunokuribox\relax}[0pt][0pt]{%
+              \hbox to \dimen0{\hss\usebox{\kanbunokuribox}\hss}%
+            }%
+          }%
+        }%
+        \hss
+      }%
+    }%
+  }%
+  \endgroup
+}
