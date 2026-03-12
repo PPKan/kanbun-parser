@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0" page-range-format="expanded" default-locale="ja-JP">
+  <info>
+    <title>Word-like Japanese Note</title>
+    <id>https://example.com/styles/word-japanese-note</id>
+    <link href="https://example.com/styles/word-japanese-note" rel="self"/>
+    <author>
+      <name>OpenAI Codex</name>
+    </author>
+    <category citation-format="note"/>
+    <updated>2026-03-12T00:00:00+00:00</updated>
+  </info>
+  <locale xml:lang="ja-JP">
+    <terms>
+      <term name="page">頁</term>
+      <term name="page-range-delimiter">-</term>
+    </terms>
+  </locale>
+  <macro name="contributors">
+    <names variable="author">
+      <name delimiter="" initialize-with=""/>
+      <substitute>
+        <names variable="editor">
+          <name delimiter="" initialize-with=""/>
+        </names>
+        <text variable="title"/>
+      </substitute>
+    </names>
+  </macro>
+  <macro name="title">
+    <text variable="title" prefix="『" suffix="』"/>
+  </macro>
+  <macro name="publication">
+    <choose>
+      <if variable="publisher issued">
+        <group prefix="（" suffix="）" delimiter="、">
+          <text variable="publisher"/>
+          <date variable="issued">
+            <date-part name="year"/>
+            <date-part name="month" prefix="." form="numeric-leading-zeros"/>
+          </date>
+        </group>
+      </if>
+      <else-if variable="publisher">
+        <text variable="publisher" prefix="（" suffix="）"/>
+      </else-if>
+    </choose>
+  </macro>
+  <macro name="locator">
+    <choose>
+      <if variable="locator">
+        <text variable="locator" suffix="頁"/>
+      </if>
+    </choose>
+  </macro>
+  <citation>
+    <layout delimiter="；">
+      <group delimiter="">
+        <text macro="contributors"/>
+        <text macro="title"/>
+        <text macro="publication"/>
+        <text macro="locator"/>
+        <text value="。"/>
+      </group>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout>
+      <group delimiter="">
+        <text macro="contributors"/>
+        <text macro="title"/>
+        <text macro="publication"/>
+        <text value="。"/>
+      </group>
+    </layout>
+  </bibliography>
+</style>

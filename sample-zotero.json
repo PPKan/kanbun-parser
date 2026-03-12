@@ -1,0 +1,41 @@
+[
+  {
+    "id": "kawaguchi1966",
+    "type": "book",
+    "author": [
+      {
+        "literal": "川口久雄校注"
+      }
+    ],
+    "title": "日本古典文学大系　菅家文草　菅家後集",
+    "publisher": "岩波書店",
+    "issued": {
+      "date-parts": [
+        [
+          1966,
+          10
+        ]
+      ]
+    }
+  },
+  {
+    "id": "sato2020",
+    "type": "book",
+    "author": [
+      {
+        "family": "佐藤",
+        "given": "真理子"
+      }
+    ],
+    "title": "漢文訓読と日本語文体",
+    "publisher": "笠間書院",
+    "issued": {
+      "date-parts": [
+        [
+          2020,
+          4
+        ]
+      ]
+    }
+  }
+]
