@@ -97,3 +97,18 @@ taro.yamada@example.jp
 検証34　頁末の余白量を観察する。\par
 検証35　最終行の見え方も確認する。\par
 \endgroup
+
+\newpage
+\begingroup
+\parindent=0pt
+\parskip=0pt
+三十字の検証
+\par
+あいうえおかきくけこあいうえおかきくけこあいうえおかきくけこ
+\par
+\vspace{\baselineskip}
+三十一字の検証
+\par
+あいうえおかきくけこあいうえおかきくけこあいうえおかきくけこさ
+\par
+\endgroup
