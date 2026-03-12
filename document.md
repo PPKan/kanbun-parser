@@ -1,8 +1,8 @@
 ---
 numbersections: true
 indent: true
-bibliography: sample-zotero.json
-csl: word-japanese-note.csl
+bibliography: references/sample-zotero.json
+csl: references/word-japanese-note.csl
 suppress-bibliography: true
 geometry:
   - top=2.5cm
