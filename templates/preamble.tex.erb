@@ -80,7 +80,16 @@
 \newcommand{\kanbunplacewithin}[3]{%
   \hbox to #1{%
     \hss
-    \rlap{\hskip #2\relax #3}%
+    \kern #2\relax
+    #3%
+    \kern -#2\relax
+    \hss
+  }%
+}
+\newcommand{\kanbunplaceside}[4]{%
+  \hbox to #1{%
+    \hskip #2\relax
+    \rlap{\hskip #3\relax #4}%
     \hss
   }%
 }
@@ -128,14 +137,14 @@
         \kanbunifempty{#4}{}{%
           \rlap{%
             \raisebox{\dimexpr\ht\kanbunbasebox-.5\ht\kanbunkaeribox+.5\dp\kanbunkaeribox+\kanbunkaeritenshifty\relax}[0pt][0pt]{%
-              \kanbunplacewithin{\dimen0}{\kanbunkaeritenshiftx}{\usebox{\kanbunkaeribox}}%
+              \kanbunplaceside{\dimen0}{\kanbunkaeritenshiftleft}{\kanbunkaeritenshiftx}{\usebox{\kanbunkaeribox}}%
             }%
           }%
         }%
         \kanbunifempty{#3}{}{%
           \rlap{%
             \raisebox{\dimexpr-\dp\kanbunbasebox-.5\ht\kanbunokuribox+.5\dp\kanbunokuribox+\kanbunokuriganashifty\relax}[0pt][0pt]{%
-              \kanbunplacewithin{\dimen0}{\kanbunokuriganashiftx}{\usebox{\kanbunokuribox}}%
+              \kanbunplaceside{\dimen0}{\kanbunokuriganishiftleft}{\kanbunokuriganashiftx}{\usebox{\kanbunokuribox}}%
             }%
           }%
         }%

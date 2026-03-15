@@ -1,9 +1,9 @@
 # Visual Variation Suite
 
-Generated at: 2026-03-15 14:26:01 +0800
+Generated at: 2026-03-15 20:39:18 +0800
 
-- Total cases: `12`
-- Passed: `12`
+- Total cases: `19`
+- Passed: `19`
 - Failed: `0`
 
 ## 20 Characters Per Line (`PASS`)
@@ -254,6 +254,33 @@ Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/p
 
 ![font-14pt-6.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/font-14pt-6.png)
 
+## Default Kanbun Layout (`PASS`)
+
+- Slug: `kanbun-default`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/kanbun-default.yml`
+- PDF: `out/variation-suite/pdfs/kanbun-default.pdf`
+- TeX: `out/variation-suite/tex/kanbun-default.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+--- {}
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/kanbun-default.pdf
+```
+
+### Representative Pages
+
+![kanbun-default-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/kanbun-default-1.png)
+
 ## Large Kanbun Annotations (`PASS`)
 
 - Slug: `kanbun-big-all`
@@ -304,6 +331,224 @@ Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/p
 ### Representative Pages
 
 ![kanbun-big-all-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/kanbun-big-all-1.png)
+
+## Furigana Shifted Up And Right (`PASS`)
+
+- Slug: `furigana-up-right`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/furigana-up-right.yml`
+- PDF: `out/variation-suite/pdfs/furigana-up-right.pdf`
+- TeX: `out/variation-suite/tex/furigana-up-right.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  furigana:
+    size: 10pt
+    shift:
+      up: 2pt
+      right: 3pt
+      down: 0pt
+      left: 0pt
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/furigana-up-right.pdf
+```
+
+### Representative Pages
+
+![furigana-up-right-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/furigana-up-right-1.png)
+
+## Furigana Shifted Left And Down (`PASS`)
+
+- Slug: `furigana-left-down`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/furigana-left-down.yml`
+- PDF: `out/variation-suite/pdfs/furigana-left-down.pdf`
+- TeX: `out/variation-suite/tex/furigana-left-down.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  furigana:
+    size: 10pt
+    shift:
+      up: 0pt
+      right: 0pt
+      down: 1.5pt
+      left: 2pt
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/furigana-left-down.pdf
+```
+
+### Representative Pages
+
+![furigana-left-down-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/furigana-left-down-1.png)
+
+## Kaeriten Shifted Up And Right (`PASS`)
+
+- Slug: `kaeriten-up-right`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/kaeriten-up-right.yml`
+- PDF: `out/variation-suite/pdfs/kaeriten-up-right.pdf`
+- TeX: `out/variation-suite/tex/kaeriten-up-right.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  kaeriten:
+    size: 9pt
+    shift:
+      up: 2pt
+      right: 3pt
+      down: 0pt
+      left: 0pt
+  side:
+    min_width: 0.55zw
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/kaeriten-up-right.pdf
+```
+
+### Representative Pages
+
+![kaeriten-up-right-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/kaeriten-up-right-1.png)
+
+## Kaeriten Shifted Left And Down (`PASS`)
+
+- Slug: `kaeriten-left-down`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/kaeriten-left-down.yml`
+- PDF: `out/variation-suite/pdfs/kaeriten-left-down.pdf`
+- TeX: `out/variation-suite/tex/kaeriten-left-down.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  kaeriten:
+    size: 9pt
+    shift:
+      up: 0pt
+      right: 0pt
+      down: 1.5pt
+      left: 2pt
+  side:
+    min_width: 0.55zw
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/kaeriten-left-down.pdf
+```
+
+### Representative Pages
+
+![kaeriten-left-down-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/kaeriten-left-down-1.png)
+
+## Okurigana Shifted Down And Right (`PASS`)
+
+- Slug: `okurigana-down-right`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/okurigana-down-right.yml`
+- PDF: `out/variation-suite/pdfs/okurigana-down-right.pdf`
+- TeX: `out/variation-suite/tex/okurigana-down-right.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  okurigana:
+    size: 10pt
+    shift:
+      up: 0pt
+      right: 3pt
+      down: 2pt
+      left: 0pt
+  side:
+    min_width: 0.55zw
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/okurigana-down-right.pdf
+```
+
+### Representative Pages
+
+![okurigana-down-right-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/okurigana-down-right-1.png)
+
+## Okurigana Shifted Up And Left (`PASS`)
+
+- Slug: `okurigana-up-left`
+- Focus: kanbun
+- Input: `test/fixtures/kanbun-visual.md`
+- Expected: `success`
+- Config: `out/variation-suite/configs/okurigana-up-left.yml`
+- PDF: `out/variation-suite/pdfs/okurigana-up-left.pdf`
+- TeX: `out/variation-suite/tex/okurigana-up-left.tex`
+- Page count: `1`
+
+### Overrides
+
+```yaml
+---
+kanbun:
+  okurigana:
+    size: 10pt
+    shift:
+      up: 1.5pt
+      right: 0pt
+      down: 0pt
+      left: 2pt
+  side:
+    min_width: 0.55zw
+```
+
+### Command Output
+
+```text
+Wrote C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pdfs/okurigana-up-left.pdf
+```
+
+### Representative Pages
+
+![okurigana-up-left-1.png](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/pages/okurigana-up-left-1.png)
 
 ## Kanbun Shifted Left And Down (`PASS`)
 

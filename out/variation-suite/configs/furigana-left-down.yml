@@ -1,0 +1,12 @@
+---
+default_preset: academic
+presets:
+  academic:
+    kanbun:
+      furigana:
+        size: 10pt
+        shift:
+          up: 0pt
+          right: 0pt
+          down: 1.5pt
+          left: 2pt
