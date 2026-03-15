@@ -1,0 +1,7 @@
+---
+default_preset: academic
+presets:
+  academic:
+    layout:
+      font:
+        body_size: 10pt

@@ -1,0 +1,175 @@
+cases:
+  - slug: chars-20
+    label: 20 Characters Per Line
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          characters_per_line: 20
+
+  - slug: chars-30-default
+    label: 30 Characters Per Line
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          characters_per_line: 30
+
+  - slug: chars-40-invalid
+    label: 40 Characters Per Line At 12pt
+    input: document.md
+    focus: layout
+    expected: failure
+    overrides:
+      layout:
+        grid:
+          characters_per_line: 40
+
+  - slug: chars-40-at-10pt
+    label: 40 Characters Per Line At 10pt
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          characters_per_line: 40
+        font:
+          body_size: 10pt
+
+  - slug: lines-20
+    label: 20 Lines Per Page
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          lines_per_page: 20
+
+  - slug: lines-40
+    label: 40 Lines Per Page
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          lines_per_page: 40
+
+  - slug: font-10pt
+    label: 10pt Body Text
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        font:
+          body_size: 10pt
+
+  - slug: font-14pt
+    label: 14pt Body Text
+    input: document.md
+    focus: layout
+    overrides:
+      layout:
+        font:
+          body_size: 14pt
+
+  - slug: kanbun-big-all
+    label: Large Kanbun Annotations
+    input: test/fixtures/kanbun-visual.md
+    focus: kanbun
+    overrides:
+      kanbun:
+        furigana:
+          size: 11pt
+          shift:
+            up: 1pt
+            right: 1pt
+            down: 0pt
+            left: 0pt
+        kaeriten:
+          size: 10pt
+          shift:
+            up: 1pt
+            right: 1pt
+            down: 0pt
+            left: 0pt
+        okurigana:
+          size: 10pt
+          shift:
+            up: 0pt
+            right: 1pt
+            down: 1pt
+            left: 0pt
+        side:
+          min_width: 0.55zw
+
+  - slug: kanbun-shift-left-down
+    label: Kanbun Shifted Left And Down
+    input: test/fixtures/kanbun-visual.md
+    focus: kanbun
+    overrides:
+      kanbun:
+        furigana:
+          shift:
+            up: 0pt
+            right: 0pt
+            down: 1pt
+            left: 2pt
+        kaeriten:
+          shift:
+            up: 0pt
+            right: 0pt
+            down: 1.5pt
+            left: 2pt
+        okurigana:
+          shift:
+            up: 0pt
+            right: 0pt
+            down: 2pt
+            left: 2pt
+
+  - slug: kanbun-shift-right
+    label: Kanbun Shifted Right
+    input: test/fixtures/kanbun-visual.md
+    focus: kanbun
+    overrides:
+      kanbun:
+        furigana:
+          shift:
+            up: 0pt
+            right: 3pt
+            down: 0pt
+            left: 0pt
+        kaeriten:
+          shift:
+            up: 0pt
+            right: 3pt
+            down: 0.5pt
+            left: 0pt
+        okurigana:
+          shift:
+            up: 0pt
+            right: 3pt
+            down: 1pt
+            left: 0pt
+        side:
+          min_width: 0.6zw
+
+  - slug: kanbun-mixed-sizes
+    label: Kanbun Mixed Sizes
+    input: test/fixtures/kanbun-visual.md
+    focus: kanbun
+    overrides:
+      kanbun:
+        furigana:
+          size: 9pt
+        kaeriten:
+          size: 6pt
+        okurigana:
+          size: 12pt
+          shift:
+            up: 0pt
+            right: 1pt
+            down: 1pt
+            left: 0pt

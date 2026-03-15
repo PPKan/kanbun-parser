@@ -1,0 +1,285 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[lualatex,paper=a4,fontsize=12pt,jafontsize=12pt,line_length=30zw,number_of_lines=20,baselineskip=35.13915pt]{jlreq}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{xcolor}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=3cm]{geometry}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\input{C:/Users/peter/AppData/Local/Temp/jpmd-20260315-33456-cirfht/preamble.tex}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{center}
+{\fontsize{14pt}{14pt}\selectfont\bfseries デジタル環境における漢文訓読資料の組版再現}
+\end{center}
+
+\begin{flushright}
+山田 太郎\\
+人文学研究科\\
+准教授\\
+taro.yamada@example.jp
+\end{flushright}
+\vspace{\baselineskip}
+
+本稿は、Pandoc と LuaLaTeX
+を用いた和文学術文書の作成環境を前提に、漢文訓読資料をテキストベースで記述しながら、印刷用
+PDF
+においても安定した版面を維持するための実装例を示すものである。とりわけ、返り点、送り仮名、振り仮名を同時に付した漢字列は、一般的な
+Markdown
+記法だけでは再現が難しく、研究ノート、授業配布資料、投稿原稿のいずれにおいても運用上の障害となってきた。本稿では、こうした障害を回避するために、原文の字順を保存したまま訓点情報のみを付加する方式を採用し、その意義と実装上の要点を整理する。本文中の典拠指示は
+Pandoc の citation syntax を用い、脚注形式で処理できる\footnote{川口久雄校注『日本古典文学大系　菅家文草　菅家後集』（岩波書店、1966.10）471-472頁。}。
+
+\section{はじめに}\label{ux306fux3058ux3081ux306b}
+
+漢文訓読の電子化では、本文文字列そのものと、読むための補助情報とを明確に分離して扱うことが重要である。原典テキストは校訂・検索・比較の対象となるため、後から付した仮名や記号によって可読性が損なわれたり、文字順が改変されたりしてはならない。他方で、教育現場や研究発表では訓読済みの形で紙面に示す必要があるため、表示段階では視覚的に十分整理された注記配置が求められる。したがって、内部表現では原文を保ち、出力時にのみ注記を組み上げるという二層構造が、学術利用において最も扱いやすい。
+
+さらに、日本語文書としての体裁を厳密に管理する場合、段落頭の一字下げ、行送り、和文グリッド、見出し前後の空き量などの統一が読者の理解に直接影響する。とくに訓点資料では、右側に付される小さな文字が本文に干渉しやすいため、本文・ルビ・側注の関係を安定して制御できることが不可欠である。
+
+\section{版面設計と実装方針}\label{ux7248ux9762ux8a2dux8a08ux3068ux5b9fux88c5ux65b9ux91dd}
+
+本実装では、日本語組版の規範に近い紙面を確保するため、A4
+判、三十字掛け三十行取りの固定グリッドを基本とした。左右上下の余白は明示的に指定し、段落は全面ジャスティファイとすることで、Word
+文書で整えた報告書に近い視覚的安定を再現している。タイトル、著者情報、見出し、ページ番号のような階層的要素も、それぞれ個別に書式を与え、Pandoc
+の既定動作に任せず制御した。こうした設計は、組版エンジンに依存する偶発的な空きや崩れを減らし、執筆者が本文の論旨に集中できる環境を整えるためである。
+
+\section{漢文訓読の記述法}\label{ux6f22ux6587ux8a13ux8aadux306eux8a18ux8ff0ux6cd5}
+
+漢文訓読で問題となるのは、一つの漢字に対して複数の注記が同時に必要になる点である。典型的には、上部に振り仮名、右上に返り点、右下に送り仮名が置かれ、それぞれが異なる機能を担う。既存の単純なルビ記法では、こうした三層構造を自然に表せないため、本文中に余計な制御文字を埋め込んだり、漢字の並びそのものを訓読順に書き換えたりする運用が生じやすい。しかし、その方法では原文保持という文献学上の原則に反するだけでなく、検索性や再利用性も著しく低下する。
+
+そこで本稿では、各文字を bracketed span として囲み、属性値として
+\texttt{f}、\texttt{o}、\texttt{k} を与える記法を採用した。\texttt{f}
+は振り仮名、\texttt{o} は送り仮名、\texttt{k}
+は返り点に対応し、必要のない項目は省略できる。Lua フィルタは Span
+ノードを受け取ると、可視本文にあたる基底文字列を取り出し、欠けている属性には空文字を補いながら専用の
+\texttt{\textbackslash{}kanbun} マクロへ渡す。この段階で Markdown
+の論理構造は保たれ、組版に必要な処理のみが後段へ委ねられるため、執筆時の可読性と出力時の精密さを両立しやすい。
+
+具体例として、韓愈「馬説」の冒頭を次のように記述できる。ここでは原文の配列を変えず、各字に必要な訓点だけを与えている。
+
+\begin{quote}
+\kanbun{世}{}{ニ}{}\kanbun{有}{}{リ}{二}\kanbun{伯}{はく}{}{}\kanbun{樂}{らく}{}{一}、\kanbun{然}{しか}{ル}{}\kanbun{後}{}{ニ}{}\kanbun{有}{あ}{リ}{二}\kanbun{千}{せん}{}{}\kanbun{里}{り}{}{}\kanbun{馬}{ば}{}{一}。
+\end{quote}
+
+この例では、返り点や送り仮名が本文右側に現れながらも、基底の漢字列は「世有伯樂、然後有千里馬。」という原文順を保っている。そのため、研究者は底本との照合を容易に行え、同時に学習者は訓読上必要な補助情報を視認できる。注記を属性として保持する方式は、再訓読や出力様式の切り替えにも柔軟に対応しやすい。
+
+比較のため、通常の文章による引用も次に置く。
+
+\begin{quote}
+この引用は漢文の訓点を含まない通常文である。本文よりも内側に組まれることで、論述本文との役割差が視覚的に判別しやすくなる。
+
+学術的な文章では、引用部が本文と混線しないことが重要であり、段落全体の下げ量と行送りの安定が読みやすさを左右する。
+\end{quote}
+
+\section{結論}\label{ux7d50ux8ad6}
+
+以上のように、Markdown、Pandoc、Lua フィルタ、TeX
+環境により、漢文訓読資料の注記を保った PDF
+を生成できる。原文と注記を分離して設計すれば、訓点付き文書の作成を自動化でき、教育研究の基盤となる。
+
+\newpage
+\begingroup
+\parindent=0pt
+\parskip=0pt
+
+検証01　版面の基準線を確認する。
+
+\par
+
+検証02　各行は同じ送り幅を保つ。
+
+\par
+
+検証03　空行も一行として数える。
+
+\par
+
+検証04　段落の開始位置を観察する。
+
+\par
+
+検証05　本文幅は三十字で固定する。
+
+\par
+
+検証06　左右の余白は変更しない。
+
+\par
+
+検証07　行の高さだけを調整する。
+
+\par
+
+検証08　見出し後の詰まりも確認する。
+
+\par
+
+検証09　引用の下がり量も確認する。
+
+\par
+
+検証10　和文の均整を優先してみる。
+
+\par
+
+検証11　本文の密度差を観察する。
+
+\par
+
+検証12　行末位置の揃いを確かめる。
+
+\par
+
+検証13　脚注なしの面を比較に使う。
+
+\par
+
+検証14　余白内の頁番号も確認する。
+
+\par
+
+検証15　基底文字の高さを見ておく。
+
+\par
+
+検証16　ルビの有無による差を見る。
+
+\par
+
+検証17　返り点の張り出しも見る。
+
+\par
+
+検証18　段落直前の空き量を数える。
+
+\par
+
+検証19　本文行だけを素直に並べる。
+
+\par
+
+検証20　読点位置の揺れも見ておく。
+
+\par
+
+検証21　一頁内の収まりを優先する。
+
+\par
+
+検証22　視線移動の負担を減らしたい。
+
+\par
+
+検証23　文字の黒みも見比べてみる。
+
+\par
+
+検証24　引用後の復帰位置も確かめる。
+
+\par
+
+検証25　基準行からのずれを探す。
+
+\par
+
+検証26　本文と検証文を分けて置く。
+
+\par
+
+検証27　面全体の呼吸を確認する。
+
+\par
+
+検証28　空き過多にならぬかを見る。
+
+\par
+
+検証29　行数条件を最終的に合わせる。
+
+\par
+
+検証30　ここまでで一頁に収めたい。
+
+\par
+
+検証31　この行は次頁に送られるか。
+
+\par
+
+検証32　送り量が広すぎないか見る。
+
+\par
+
+検証33　狭すぎないかも併せて見る。
+
+\par
+
+検証34　頁末の余白量を観察する。
+
+\par
+
+検証35　最終行の見え方も確認する。
+
+\par
+\endgroup
+
+\newpage
+\begingroup
+\parindent=0pt
+\parskip=0pt
+
+三十字の検証
+
+\par
+
+あいうえおかきくけこあいうえおかきくけこあいうえおかきくけこ
+
+\par
+\vspace{\baselineskip}
+
+三十一字の検証
+
+\par
+
+あいうえおかきくけこあいうえおかきくけこあいうえおかきくけこさ
+
+\par
+\endgroup
+
+\end{document}

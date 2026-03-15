@@ -1,0 +1,28 @@
+---
+default_preset: academic
+presets:
+  academic:
+    kanbun:
+      furigana:
+        size: 11pt
+        shift:
+          up: 1pt
+          right: 1pt
+          down: 0pt
+          left: 0pt
+      kaeriten:
+        size: 10pt
+        shift:
+          up: 1pt
+          right: 1pt
+          down: 0pt
+          left: 0pt
+      okurigana:
+        size: 10pt
+        shift:
+          up: 0pt
+          right: 1pt
+          down: 1pt
+          left: 0pt
+      side:
+        min_width: 0.55zw

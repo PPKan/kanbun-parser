@@ -4,14 +4,8 @@ indent: true
 bibliography: references/sample-zotero.json
 csl: references/word-japanese-note.csl
 suppress-bibliography: true
-geometry:
-  - top=2.5cm
-  - bottom=2.5cm
-  - left=3cm
-  - right=3cm
-header-includes:
-  - |
-    \input{preamble.tex}
+jpmd:
+  preset: academic
 ---
 
 \begin{center}
@@ -46,7 +40,7 @@ taro.yamada@example.jp
 
 具体例として、韓愈「馬説」の冒頭を次のように記述できる。ここでは原文の配列を変えず、各字に必要な訓点だけを与えている。
 
-> [世]{f="よ" o="ニ" k="二"}[有]{f="あ" o="リ" k="一"}[伯]{f="はく"}[樂]{f="らく"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="レ"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば"}。
+> [世]{o="ニ"}[有]{ o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 
 この例では、返り点や送り仮名が本文右側に現れながらも、基底の漢字列は「世有伯樂、然後有千里馬。」という原文順を保っている。そのため、研究者は底本との照合を容易に行え、同時に学習者は訓読上必要な補助情報を視認できる。注記を属性として保持する方式は、再訓読や出力様式の切り替えにも柔軟に対応しやすい。
 

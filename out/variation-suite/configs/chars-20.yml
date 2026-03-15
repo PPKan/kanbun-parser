@@ -1,0 +1,7 @@
+---
+default_preset: academic
+presets:
+  academic:
+    layout:
+      grid:
+        characters_per_line: 20

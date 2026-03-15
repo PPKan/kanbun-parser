@@ -1,0 +1,40 @@
+default_preset: academic
+
+presets:
+  academic:
+    layout:
+      margins:
+        top: 2.5cm
+        right: 3cm
+        bottom: 2.5cm
+        left: 3cm
+      grid:
+        characters_per_line: 30
+        lines_per_page: 30
+      font:
+        body_size: 12pt
+    kanbun:
+      side:
+        gap: 0.10zw
+        min_width: 0.35zw
+      furigana:
+        size: 7pt
+        shift:
+          up: 0pt
+          right: 0pt
+          down: 0pt
+          left: 0pt
+      kaeriten:
+        size: 7pt
+        shift:
+          up: 0pt
+          right: 0pt
+          down: 0.35ex
+          left: 0pt
+      okurigana:
+        size: 7pt
+        shift:
+          up: 0pt
+          right: 0pt
+          down: 0pt
+          left: 0pt
