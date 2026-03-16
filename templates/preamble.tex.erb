@@ -1,10 +1,7 @@
 \usepackage[match]{luatexja-fontspec}
 \renewcommand{\jlreqkanjiskip}{<%= kanjiskip %> plus 0.1pt minus 0.1pt}
-\setmainfont{Times New Roman}
-\setmainjfont[
-  BoldFont={MS Mincho},
-  BoldFeatures={FakeBold=2}
-]{MS Mincho}
+<%= latin_font_setup %>
+<%= japanese_font_setup %>
 
 \usepackage{titlesec}
 \titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
