@@ -21,6 +21,8 @@ module JPMD
         0
       when "build"
         build_command
+      when "serve"
+        serve_command
       else
         warn "Unknown command: #{command}"
         warn root_usage
@@ -82,10 +84,56 @@ module JPMD
       0
     end
 
+    def serve_command
+      options = {
+        host: "127.0.0.1",
+        port: 4567
+      }
+
+      parser = OptionParser.new do |opts|
+        opts.banner = "Usage: jpmd serve [options]"
+
+        opts.on("--host HOST", "Bind the local web app to HOST") do |value|
+          options[:host] = value.to_s
+        end
+
+        opts.on("--port PORT", Integer, "Bind the local web app to PORT") do |value|
+          options[:port] = value
+        end
+
+        opts.on("-h", "--help", "Show this help") do
+          puts opts
+          return 0
+        end
+      end
+
+      parser.parse!(@argv)
+
+      raise JPMD::ValidationError, parser.to_s unless @argv.empty?
+      raise JPMD::ValidationError, "--host must not be empty" if options[:host].strip.empty?
+      raise JPMD::ValidationError, "--port must be between 1 and 65535" unless (1..65_535).cover?(options[:port])
+
+      begin
+        require_relative "web_form"
+        require_relative "web_builder"
+        require_relative "web_app"
+      rescue LoadError => e
+        raise JPMD::CommandError, "Missing web dependency: #{e.message}. Run bundle install before jpmd serve."
+      end
+
+      puts "Listening on http://#{options[:host]}:#{options[:port]}"
+
+      JPMD::WebApp.set :repo_root, JPMD::Compiler::APP_ROOT
+      JPMD::WebApp.set :build_runner, { callable: JPMD::WebBuilder.new(repo_root: JPMD::Compiler::APP_ROOT).method(:build) }
+      JPMD::WebApp.run!(bind: options[:host], port: options[:port])
+      0
+    end
+
     def root_usage
       <<~TEXT
         Usage:
           jpmd build INPUT.md -o OUTPUT.pdf [--config jpmd.yml] [--preset academic] [--emit-tex out.tex]
+          jpmd serve [--host 127.0.0.1] [--port 4567]
       TEXT
     end
   end

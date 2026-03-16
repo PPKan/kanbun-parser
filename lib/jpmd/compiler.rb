@@ -14,13 +14,30 @@ module JPMD
     WINDOWS_PANDOC = File.expand_path("~/AppData/Local/Pandoc/pandoc.exe")
     WINDOWS_LUALATEX = "C:/texlive/2025/bin/windows/lualatex.exe"
     APP_ROOT = File.expand_path("../..", __dir__)
+    TIMES_NEW_ROMAN_ENV_VARS = {
+      regular: "JPMD_TIMES_NEW_ROMAN_REGULAR",
+      bold: "JPMD_TIMES_NEW_ROMAN_BOLD",
+      italic: "JPMD_TIMES_NEW_ROMAN_ITALIC",
+      bold_italic: "JPMD_TIMES_NEW_ROMAN_BOLD_ITALIC"
+    }.freeze
+    TIMES_NEW_ROMAN_FILENAMES = {
+      regular: "times.ttf",
+      bold: "timesbd.ttf",
+      italic: "timesi.ttf",
+      bold_italic: "timesbi.ttf"
+    }.freeze
+    MS_MINCHO_ENV_VAR = "JPMD_MS_MINCHO"
+    MS_MINCHO_FILENAME = "msmincho.ttc"
 
-    def initialize(input_path:, output_path:, config_path:, preset_name:, emit_tex_path:)
+    def initialize(input_path:, output_path:, config_path:, preset_name:, emit_tex_path:, working_dir: nil, asset_root: APP_ROOT, runtime_overrides: nil)
       @input_path = File.expand_path(input_path)
       @output_path = File.expand_path(output_path)
       @config_path = File.expand_path(config_path)
       @preset_name = preset_name
       @emit_tex_path = emit_tex_path && File.expand_path(emit_tex_path)
+      @working_dir = working_dir && File.expand_path(working_dir)
+      @asset_root = File.expand_path(asset_root)
+      @runtime_overrides = runtime_overrides || {}
     end
 
     def build
@@ -29,11 +46,13 @@ module JPMD
       resolved = JPMD::Config.new(
         input_path: @input_path,
         config_path: @config_path,
-        cli_preset: @preset_name
+        cli_preset: @preset_name,
+        runtime_overrides: @runtime_overrides
       ).resolve
 
       @settings = resolved.fetch("settings")
       @derived = resolved.fetch("derived")
+      @working_dir ||= resolved.fetch("project_root")
 
       FileUtils.mkdir_p(File.dirname(@output_path))
       FileUtils.mkdir_p(File.dirname(@emit_tex_path)) if @emit_tex_path
@@ -66,7 +85,7 @@ module JPMD
     end
 
     def render_template
-      source = File.read(File.join(APP_ROOT, "template.tex"), mode: "r:utf-8")
+      source = File.read(File.join(@asset_root, "template.tex"), mode: "r:utf-8")
       class_options = [
         "lualatex",
         "paper=a4",
@@ -88,11 +107,14 @@ module JPMD
     end
 
     def render_preamble
-      template = File.read(File.join(APP_ROOT, "templates", "preamble.tex.erb"), mode: "r:utf-8")
+      template = File.read(File.join(@asset_root, "templates", "preamble.tex.erb"), mode: "r:utf-8")
       layout = @settings.fetch("layout")
       kanbun = @settings.fetch("kanbun")
+      font_setup = resolve_font_setup
 
       ERB.new(template, trim_mode: "-").result_with_hash(
+        latin_font_setup: font_setup.fetch(:latin),
+        japanese_font_setup: font_setup.fetch(:japanese),
         kanjiskip: format_pt(@derived.fetch("kanjiskip_pt")),
         furigana_size: tex_dimension(kanbun.fetch("furigana").fetch("size")),
         furigana_up: tex_dimension(kanbun.fetch("furigana").fetch("shift").fetch("up")),
@@ -113,6 +135,146 @@ module JPMD
         side_min_width: tex_dimension(kanbun.fetch("side").fetch("min_width")),
         body_size: tex_dimension(layout.fetch("font").fetch("body_size"))
       )
+    end
+
+    def resolve_font_setup
+      latin = resolve_latin_font_setup
+      japanese = resolve_japanese_font_setup
+
+      return { latin: latin, japanese: japanese } if latin && japanese
+
+      missing = []
+      missing << "Times New Roman" unless latin
+      missing << "MS Mincho" unless japanese
+
+      raise JPMD::CommandError, <<~TEXT.chomp
+        Missing required fonts on this machine: #{missing.join(", ")}
+        Keep the same fonts by either:
+        - installing those exact fonts so LuaLaTeX can resolve the family names, or
+        - setting JPMD_WINDOWS_FONT_DIR to a directory containing #{TIMES_NEW_ROMAN_FILENAMES.values.join(", ")} and #{MS_MINCHO_FILENAME}, or
+        - setting #{TIMES_NEW_ROMAN_ENV_VARS.values.join(", ")}, and #{MS_MINCHO_ENV_VAR} to the exact font files
+      TEXT
+    end
+
+    def resolve_latin_font_setup
+      return "\\setmainfont{Times New Roman}" if windows?
+
+      files = resolve_times_new_roman_files
+      return render_times_new_roman_file_setup(files) if files
+      return "\\setmainfont{Times New Roman}" if font_family_available?("Times New Roman")
+
+      nil
+    end
+
+    def resolve_japanese_font_setup
+      family_setup = <<~TEX.chomp
+        \\setmainjfont[
+          BoldFont={MS Mincho},
+          BoldFeatures={FakeBold=2}
+        ]{MS Mincho}
+      TEX
+      return family_setup if windows?
+
+      file = resolve_ms_mincho_file
+      return render_ms_mincho_file_setup(file) if file
+      return family_setup if font_family_available?("MS Mincho")
+
+      nil
+    end
+
+    def resolve_times_new_roman_files
+      explicit = TIMES_NEW_ROMAN_ENV_VARS.transform_values { |env_name| env_file(env_name) }
+      return validate_explicit_times_new_roman_files(explicit) if explicit.values.any?
+
+      font_dir_candidates.each do |dir|
+        files = TIMES_NEW_ROMAN_FILENAMES.transform_values { |filename| File.join(dir, filename) }
+        return files if files.values.all? { |path| File.file?(path) }
+      end
+
+      nil
+    end
+
+    def validate_explicit_times_new_roman_files(files)
+      missing = files.select { |_style, path| path.nil? || !File.file?(path) }
+      return files if missing.empty?
+
+      missing_vars = missing.keys.map { |style| TIMES_NEW_ROMAN_ENV_VARS.fetch(style) }
+      raise JPMD::CommandError, "Explicit Times New Roman font files are missing: #{missing_vars.join(", ")}"
+    end
+
+    def resolve_ms_mincho_file
+      explicit = env_file(MS_MINCHO_ENV_VAR)
+      return explicit if explicit && File.file?(explicit)
+      raise JPMD::CommandError, "Explicit MS Mincho font file is missing: #{MS_MINCHO_ENV_VAR}" if explicit
+
+      font_dir_candidates.each do |dir|
+        path = File.join(dir, MS_MINCHO_FILENAME)
+        return path if File.file?(path)
+      end
+
+      nil
+    end
+
+    def render_times_new_roman_file_setup(files)
+      dir = "#{tex_path(File.dirname(files.fetch(:regular)))}/"
+
+      <<~TEX.chomp
+        \\setmainfont[
+          Path={#{dir}},
+          UprightFont={#{File.basename(files.fetch(:regular))}},
+          BoldFont={#{File.basename(files.fetch(:bold))}},
+          ItalicFont={#{File.basename(files.fetch(:italic))}},
+          BoldItalicFont={#{File.basename(files.fetch(:bold_italic))}}
+        ]{}
+      TEX
+    end
+
+    def render_ms_mincho_file_setup(path)
+      dir = "#{tex_path(File.dirname(path))}/"
+      basename = File.basename(path)
+
+      <<~TEX.chomp
+        \\setmainjfont[
+          Path={#{dir}},
+          UprightFont={#{basename}},
+          BoldFont={#{basename}},
+          BoldFeatures={FakeBold=2}
+        ]{}
+      TEX
+    end
+
+    def font_dir_candidates
+      @font_dir_candidates ||= begin
+        [
+          File.join(@asset_root, "vendor", "fonts"),
+          ENV["JPMD_WINDOWS_FONT_DIR"],
+          "/mnt/c/Windows/Fonts",
+          File.expand_path("~/AppData/Local/Microsoft/Windows/Fonts"),
+          File.expand_path("~/.wine/drive_c/windows/Fonts")
+        ].compact.reject(&:empty?).uniq.select { |path| File.directory?(path) }
+      end
+    end
+
+    def font_family_available?(family_name)
+      @font_family_names ||= begin
+        stdout, status = Open3.capture2("fc-list", ":family")
+        if status.success?
+          stdout.lines.flat_map { |line| line.split(":").last.to_s.split(",") }.map(&:strip).reject(&:empty?).uniq
+        else
+          []
+        end
+      rescue Errno::ENOENT
+        []
+      end
+
+      @font_family_names.include?(family_name)
+    end
+
+    def env_file(env_name)
+      value = ENV[env_name]
+      return nil if value.nil? || value.empty?
+
+      File.expand_path(value)
     end
 
     def render_metadata(preamble_path)
@@ -141,12 +303,12 @@ module JPMD
         "--citeproc",
         "--template", template_path,
         "--metadata-file", metadata_path,
-        "--lua-filter", File.join(APP_ROOT, "filter.lua"),
+        "--lua-filter", File.join(@asset_root, "filter.lua"),
         "-t", "latex",
         "-o", tex_path
       ]
 
-      execute(command, chdir: APP_ROOT, failure_label: "Pandoc")
+      execute(command, chdir: @working_dir, failure_label: "Pandoc")
     end
 
     def run_lualatex(tex_path, workdir)

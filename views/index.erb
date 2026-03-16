@@ -1,0 +1,170 @@
+<div class="layout">
+  <main class="builder card">
+    <% if @error_message %>
+      <div class="error">
+        <strong>Build failed</strong>
+        <div><%= h(@error_message) %></div>
+      </div>
+    <% end %>
+
+    <form action="/build" method="post" enctype="multipart/form-data">
+      <section class="stack">
+        <div class="section-head">
+          <div>
+            <h2>Source</h2>
+            <p class="helper">Choose exactly one input mode for each build request.</p>
+          </div>
+        </div>
+        <div class="mode-grid">
+          <label class="mode-tile">
+            <input type="radio" name="source_mode" value="paste" <%= "checked" if source_mode?("paste") %>>
+            <div class="mode-copy">
+              <strong>Paste Markdown</strong>
+              <span>Use the textarea below and compile the pasted content directly.</span>
+            </div>
+          </label>
+          <label class="mode-tile">
+            <input type="radio" name="source_mode" value="upload" <%= "checked" if source_mode?("upload") %>>
+            <div class="mode-copy">
+              <strong>Upload Markdown File</strong>
+              <span>Accepts <code>.md</code> or <code>.markdown</code> as UTF-8 text.</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="source-pane" data-source-pane="paste">
+          <label>
+            Markdown Text
+            <textarea name="markdown_text" spellcheck="false"><%= h(state_value("markdown_text")) %></textarea>
+          </label>
+        </div>
+
+        <div class="source-pane" data-source-pane="upload">
+          <label>
+            Markdown File
+            <input type="file" name="markdown_file" accept=".md,.markdown,text/markdown,text/plain">
+          </label>
+          <p class="mini">
+            <% if state_value("upload_filename").to_s.empty? %>
+              No file selected yet.
+            <% else %>
+              Last selected file: <strong><%= h(state_value("upload_filename")) %></strong>
+            <% end %>
+          </p>
+        </div>
+      </section>
+
+      <section class="stack">
+        <div class="section-head">
+          <div>
+            <h2>Page Controls</h2>
+            <p class="helper">These are the common parameters you usually adjust first.</p>
+          </div>
+        </div>
+        <div class="field-grid compact">
+          <label>
+            Top Margin
+            <input type="text" name="overrides[layout][margins][top]" value="<%= h(state_value("overrides", "layout", "margins", "top")) %>">
+          </label>
+          <label>
+            Right Margin
+            <input type="text" name="overrides[layout][margins][right]" value="<%= h(state_value("overrides", "layout", "margins", "right")) %>">
+          </label>
+          <label>
+            Bottom Margin
+            <input type="text" name="overrides[layout][margins][bottom]" value="<%= h(state_value("overrides", "layout", "margins", "bottom")) %>">
+          </label>
+          <label>
+            Left Margin
+            <input type="text" name="overrides[layout][margins][left]" value="<%= h(state_value("overrides", "layout", "margins", "left")) %>">
+          </label>
+          <label>
+            Characters Per Line
+            <input type="number" min="2" name="overrides[layout][grid][characters_per_line]" value="<%= h(state_value("overrides", "layout", "grid", "characters_per_line")) %>">
+          </label>
+          <label>
+            Lines Per Page
+            <input type="number" min="1" name="overrides[layout][grid][lines_per_page]" value="<%= h(state_value("overrides", "layout", "grid", "lines_per_page")) %>">
+          </label>
+          <label>
+            Body Font Size
+            <input type="text" name="overrides[layout][font][body_size]" value="<%= h(state_value("overrides", "layout", "font", "body_size")) %>">
+          </label>
+        </div>
+      </section>
+
+      <details <%= "open" if advanced_open? %>>
+        <summary>Advanced Kanbun Controls</summary>
+        <div class="details-body">
+          <section class="kanbun-group">
+            <h3>Side Notes</h3>
+            <div class="field-grid kanbun">
+              <label>
+                Side Gap
+                <input type="text" name="overrides[kanbun][side][gap]" value="<%= h(state_value("overrides", "kanbun", "side", "gap")) %>">
+              </label>
+              <label>
+                Side Min Width
+                <input type="text" name="overrides[kanbun][side][min_width]" value="<%= h(state_value("overrides", "kanbun", "side", "min_width")) %>">
+              </label>
+            </div>
+          </section>
+
+          <% [["furigana", "Furigana"], ["kaeriten", "Kaeriten"], ["okurigana", "Okurigana"]].each do |key, label| %>
+            <section class="kanbun-group">
+              <h3><%= label %></h3>
+              <div class="field-grid kanbun">
+                <label>
+                  Size
+                  <input type="text" name="overrides[kanbun][<%= key %>][size]" value="<%= h(state_value("overrides", "kanbun", key, "size")) %>">
+                </label>
+                <label>
+                  Shift Up
+                  <input type="text" name="overrides[kanbun][<%= key %>][shift][up]" value="<%= h(state_value("overrides", "kanbun", key, "shift", "up")) %>">
+                </label>
+                <label>
+                  Shift Right
+                  <input type="text" name="overrides[kanbun][<%= key %>][shift][right]" value="<%= h(state_value("overrides", "kanbun", key, "shift", "right")) %>">
+                </label>
+                <label>
+                  Shift Down
+                  <input type="text" name="overrides[kanbun][<%= key %>][shift][down]" value="<%= h(state_value("overrides", "kanbun", key, "shift", "down")) %>">
+                </label>
+                <label>
+                  Shift Left
+                  <input type="text" name="overrides[kanbun][<%= key %>][shift][left]" value="<%= h(state_value("overrides", "kanbun", key, "shift", "left")) %>">
+                </label>
+              </div>
+            </section>
+          <% end %>
+        </div>
+      </details>
+
+      <div class="build-bar">
+        <button type="submit">Build PDF</button>
+        <div class="mini">Browser precedence is: built-in preset → repo <code>jpmd.yml</code> → Markdown frontmatter → web form values.</div>
+      </div>
+    </form>
+  </main>
+
+  <aside class="sidebar card">
+    <section class="spec-list">
+      <div class="spec">
+        <strong>Paste or upload</strong>
+        <span class="note">The form accepts pasted Markdown or a single uploaded Markdown file. v1 does not merge both sources in one request.</span>
+      </div>
+      <div class="spec">
+        <strong>Citations stay local</strong>
+        <span class="note">Each request gets a temp workspace and a copied <code>references/</code> directory so the bundled citation sample still resolves.</span>
+      </div>
+      <div class="spec">
+        <strong>No persistence</strong>
+        <span class="note">There is no history, no accounts, and no queued jobs. Each build is synchronous and returns the PDF immediately.</span>
+      </div>
+    </section>
+    <section class="stack">
+      <h2>Suggested Inputs</h2>
+      <p class="helper">For a quick check, paste the repo’s <code>document.md</code> or upload <code>test/fixtures/kanbun-visual.md</code> to verify the kanbun path through the browser flow.</p>
+    </section>
+  </aside>
+</div>

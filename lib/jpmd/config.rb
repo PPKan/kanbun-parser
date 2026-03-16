@@ -75,10 +75,11 @@ module JPMD
     PHYSICAL_DIMENSION_PATTERN = /\A(0|[0-9]+(?:\.[0-9]+)?)(pt|mm|cm|in)\z/
     GENERIC_DIMENSION_PATTERN = /\A(0|[0-9]+(?:\.[0-9]+)?)(pt|mm|cm|in|bp|dd|cc|sp|ex|em|zw|zh)\z/
 
-    def initialize(input_path:, config_path:, cli_preset:)
+    def initialize(input_path:, config_path:, cli_preset:, runtime_overrides: nil)
       @input_path = input_path
       @config_path = config_path
       @cli_preset = cli_preset
+      @runtime_overrides = runtime_overrides || {}
     end
 
     def resolve
@@ -96,6 +97,7 @@ module JPMD
       project_preset = hash_at(project_config, "presets", preset_name) || {}
       merged = deep_merge(builtin_preset, project_preset)
       merged = deep_merge(merged, document_config)
+      merged = deep_merge(merged, @runtime_overrides)
 
       {
         "preset_name" => preset_name,
