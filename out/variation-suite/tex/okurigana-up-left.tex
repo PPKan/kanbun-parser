@@ -1,6 +1,9 @@
 % Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
+% TeX Live 2023 ships jlreq versions that still call the older everyhook API.
+% Map that call onto the current paragraph hook system when needed.
+\IfFileExists{everyhook.sty}{\RequirePackage{everyhook}}{\newcommand{\PushPostHook}[2]{\AddToHook{para/after}{##2}}}
 %
 \documentclass[lualatex,paper=a4,fontsize=12pt,jafontsize=12pt,line_length=30zw,number_of_lines=30,baselineskip=23.42610pt]{jlreq}
 \usepackage{amsmath,amssymb}
@@ -30,7 +33,7 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{5}
-\input{C:/Users/peter/AppData/Local/Temp/jpmd-20260315-47436-sdby0/preamble.tex}
+\input{/tmp/jpmd-20260316-28911-nf0bh4/preamble.tex}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -60,11 +63,13 @@ tester@example.jp
 
 本ページは、振り仮名、返り点、送り仮名の位置とサイズを切り替えたときに、本文との干渉や引用ブロック内での下がり量がどのように見えるかを確認するための専用サンプルである。
 
-\section{標準位置}\label{ux6a19ux6e96ux4f4dux7f6e}
+\hypertarget{ux6a19ux6e96ux4f4dux7f6e}{%
+\section{標準位置}\label{ux6a19ux6e96ux4f4dux7f6e}}
 
 \kanbun{世}{}{ニ}{}\kanbun{有}{}{リ}{二}\kanbun{伯}{はく}{}{}\kanbun{樂}{らく}{}{一}、\kanbun{然}{しか}{ル}{}\kanbun{後}{}{ニ}{}\kanbun{有}{あ}{リ}{二}\kanbun{千}{せん}{}{}\kanbun{里}{り}{}{}\kanbun{馬}{ば}{}{一}。
 
-\section{引用内の配置}\label{ux5f15ux7528ux5185ux306eux914dux7f6e}
+\hypertarget{ux5f15ux7528ux5185ux306eux914dux7f6e}{%
+\section{引用内の配置}\label{ux5f15ux7528ux5185ux306eux914dux7f6e}}
 
 \begin{quote}
 \kanbun{學}{がく}{}{}\kanbun{而}{じ}{}{}\kanbun{時}{とき}{}{}\kanbun{習}{なら}{フ}{}\kanbun{之}{これ}{}{}、\kanbun{不}{ず}{}{}\kanbun{亦}{また}{}{}\kanbun{説}{よろこ}{バ}{}\kanbun{乎}{や}{}{}。
