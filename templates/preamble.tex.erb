@@ -92,13 +92,15 @@
 }
 \newcommand{\kanbunbuildmainbox}[2]{%
   \kanbunifempty{#2}{%
-    \sbox{\kanbunmainbox}{#1}%
+    \sbox{\kanbunmainbox}{\usebox{\kanbunbasebox}}%
   }{%
     \sbox{\kanbunfuriganabox}{{\kanbunfuriganafont #2}}%
     \sbox{\kanbunmainbox}{%
-      \ruby{#1}{%
-        \kanbunplacewithin{\wd\kanbunfuriganabox}{\kanbunfuriganashiftx}{%
-          \raisebox{\kanbunfuriganashifty}[0pt][0pt]{\usebox{\kanbunfuriganabox}}%
+      \makebox[\wd\kanbunbasebox][c]{%
+        \ruby{#1}{%
+          \kanbunplacewithin{\wd\kanbunfuriganabox}{\kanbunfuriganashiftx}{%
+            \raisebox{\kanbunfuriganashifty}[0pt][0pt]{\usebox{\kanbunfuriganabox}}%
+          }%
         }%
       }%
     }%
