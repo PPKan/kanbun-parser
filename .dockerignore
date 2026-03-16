@@ -1,0 +1,16 @@
+.git
+.gitignore
+font-file-test.aux
+font-file-test.log
+jfont-file-test.aux
+jfont-file-test.log
+jlreq-hook-test.aux
+jlreq-hook-test.log
+out/variation-suite
+out/document-linux-page-1.png
+out/document-linux-page-2.png
+out/document-linux-page-3.png
+out/document-linux-page-4.png
+out/document-linux-page-5.png
+out/document-linux-page-6.png
+tmp
