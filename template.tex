@@ -9,11 +9,7 @@ $if(CJKmainfont)$
 $endif$
 % TeX Live 2023 ships jlreq versions that still call the older everyhook API.
 % Map that call onto the current paragraph hook system when needed.
-\IfFileExists{everyhook.sty}{}{%
-  \makeatletter
-  \@ifundefined{PushPostHook}{\newcommand{\PushPostHook}[2]{\AddToHook{para/after}{#2}}}{}
-  \makeatother
-}
+\IfFileExists{everyhook.sty}{\RequirePackage{everyhook}}{\newcommand{\PushPostHook}[2]{\AddToHook{para/after}{##2}}}
 %
 \documentclass[lualatex,paper=a4,fontsize=12pt,jafontsize=12pt,line_length=30zw,number_of_lines=30,baselineskip=23.34pt]{jlreq}
 $if(beamer)$
