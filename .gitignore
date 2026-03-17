@@ -1,8 +1,15 @@
+# Generated build output
+/out/
+/tmp/
+
+# LaTeX intermediates
 *.aux
 *.log
 *.ltjruby
 input.ltjruby
 document.tex
+
+# Local preview/debug images
 document-page1.png
 kanbun-close.png
 kanbun-crop.png

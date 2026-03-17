@@ -1,7 +1,7 @@
 cases:
   - slug: chars-20
     label: 20 Characters Per Line
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -10,7 +10,7 @@ cases:
 
   - slug: chars-30-default
     label: 30 Characters Per Line
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -19,7 +19,7 @@ cases:
 
   - slug: chars-40-invalid
     label: 40 Characters Per Line At 12pt
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     expected: failure
     overrides:
@@ -29,7 +29,7 @@ cases:
 
   - slug: chars-40-at-10pt
     label: 40 Characters Per Line At 10pt
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -40,7 +40,7 @@ cases:
 
   - slug: lines-20
     label: 20 Lines Per Page
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -49,7 +49,7 @@ cases:
 
   - slug: lines-40
     label: 40 Lines Per Page
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -58,7 +58,7 @@ cases:
 
   - slug: font-10pt
     label: 10pt Body Text
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:
@@ -67,7 +67,7 @@ cases:
 
   - slug: font-14pt
     label: 14pt Body Text
-    input: document.md
+    input: examples/academic-paper.md
     focus: layout
     overrides:
       layout:

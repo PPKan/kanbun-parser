@@ -1,151 +1,58 @@
-# Compile And Adjust JPMD Output
+# Compile And Adjust Output
 
-This document explains how to compile the current project and how to tune the parameters yourself.
+This document is the parameter guide for the CLI build pipeline.
 
-## 1. What this build does
+## Build Inputs
 
-The current CLI builds Markdown to PDF with:
+Use one of the sample Markdown files in `examples/`:
+
+- `examples/academic-paper.md`: full document sample
+- `examples/minimal-kanbun.md`: kanbun-only sample
+
+Main command:
+
+```bash
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
+```
+
+Minimal kanbun command:
+
+```bash
+ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
+```
+
+## Build Stack
+
+The project builds Markdown to PDF with:
 
 - `Pandoc`
 - `LuaLaTeX`
 - `jlreq`
-- the custom kanbun Lua filter in `filter.lua`
-- the generated preamble in `templates/preamble.tex.erb`
-- the project defaults in `jpmd.yml`
+- `filter.lua`
+- `template.tex`
+- `templates/preamble.tex.erb`
+- `jpmd.yml`
 
-The main entrypoint is `bin/jpmd`.
-
-## 2. Requirements
-
-You need:
-
-- Ruby
-- Pandoc
-- LuaLaTeX
-- the TeX packages already used by this repo, especially `jlreq` and `luatexja-ruby`
-- the exact document fonts:
-  - `Times New Roman`
-  - `MS Mincho`
-
-The compiler looks for:
-
-- `pandoc` on `PATH`, or `PANDOC_PATH`
-- `lualatex` on `PATH`, or `LUALATEX_PATH`
-- the repo-local `vendor/fonts` directory, if present
-- `Times New Roman` and `MS Mincho` through the system font database, or exact font files via:
-  - `JPMD_WINDOWS_FONT_DIR`
-  - `JPMD_TIMES_NEW_ROMAN_REGULAR`
-  - `JPMD_TIMES_NEW_ROMAN_BOLD`
-  - `JPMD_TIMES_NEW_ROMAN_ITALIC`
-  - `JPMD_TIMES_NEW_ROMAN_BOLD_ITALIC`
-  - `JPMD_MS_MINCHO`
-
-Example Linux setup when running inside WSL or another Linux environment that can see a Windows font directory:
-
-```bash
-export JPMD_WINDOWS_FONT_DIR=/mnt/c/Windows/Fonts
-```
-
-If `vendor/fonts` contains `times.ttf`, `timesbd.ttf`, `timesi.ttf`, `timesbi.ttf`, and `msmincho.ttc`, the compiler will pick them up automatically.
-
-Example explicit tool paths:
-
-```bash
-export PANDOC_PATH=/usr/bin/pandoc
-export LUALATEX_PATH=/usr/bin/lualatex
-```
-
-## 3. Basic compile command
-
-From the project root:
-
-```bash
-ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
-```
-
-This writes:
-
-- the PDF to `out/document.pdf`
-- the generated TeX to `out/document.tex`
-
-If you only want the PDF:
-
-```bash
-ruby bin/jpmd build document.md -o out/document.pdf
-```
-
-## 4. How settings are resolved
+## Configuration Order
 
 Settings are applied in this order:
 
-1. Built-in preset: `academic`
-2. Project config: `jpmd.yml`
-3. Per-document frontmatter override: `jpmd:`
+1. built-in preset: `academic`
+2. project config: `jpmd.yml`
+3. document frontmatter override: `jpmd:`
 
 You can also choose a preset explicitly:
 
 ```bash
-ruby bin/jpmd build document.md -o out/document.pdf --preset academic
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --preset academic
 ```
 
-## 5. Project-wide parameter editing
+## Per-Document Overrides
 
-Edit `jpmd.yml` when you want the change to affect all builds that use the project default.
-
-Current default structure:
-
-```yaml
-default_preset: academic
-
-presets:
-  academic:
-    layout:
-      margins:
-        top: 2.5cm
-        right: 3cm
-        bottom: 2.5cm
-        left: 3cm
-      grid:
-        characters_per_line: 30
-        lines_per_page: 30
-      font:
-        body_size: 12pt
-    kanbun:
-      side:
-        gap: 0.10zw
-        min_width: 0.35zw
-      furigana:
-        size: 7pt
-        shift:
-          up: 0pt
-          right: 0pt
-          down: 0pt
-          left: 0pt
-      kaeriten:
-        size: 7pt
-        shift:
-          up: 0pt
-          right: 0pt
-          down: 0.35ex
-          left: 0pt
-      okurigana:
-        size: 7pt
-        shift:
-          up: 0pt
-          right: 0pt
-          down: 0pt
-          left: 0pt
-```
-
-## 6. Per-document overrides
-
-If you want to test only one Markdown file, add `jpmd:` in that file's YAML frontmatter.
-
-Example:
+Add `jpmd:` in a Markdown file when you want a document-local layout change.
 
 ```yaml
 ---
-numbersections: true
 jpmd:
   layout:
     grid:
@@ -164,13 +71,9 @@ jpmd:
 ---
 ```
 
-That override affects only that Markdown file.
+## Temporary Project Override File
 
-## 7. Temporary test config without touching the main config
-
-If you want to experiment without changing `jpmd.yml`, create a separate YAML file and pass it with `--config`.
-
-Example `jpmd.test.yml`:
+If you do not want to edit `jpmd.yml`, create a second config file and pass `--config`.
 
 ```yaml
 default_preset: academic
@@ -183,27 +86,15 @@ presets:
         lines_per_page: 25
       font:
         body_size: 11pt
-    kanbun:
-      furigana:
-        size: 8pt
-        shift:
-          up: 2pt
-          right: 1pt
-          down: 0pt
-          left: 0pt
 ```
-
-Compile with it:
 
 ```bash
-ruby bin/jpmd build document.md -o out/document-test.pdf --emit-tex out/document-test.tex --config jpmd.test.yml
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper-test.pdf --emit-tex out/academic-paper-test.tex --config jpmd.test.yml
 ```
 
-## 8. Adjustable parameters
+## Adjustable Parameters
 
-### Layout
-
-You can adjust:
+Layout settings:
 
 - `layout.margins.top`
 - `layout.margins.right`
@@ -213,16 +104,7 @@ You can adjust:
 - `layout.grid.lines_per_page`
 - `layout.font.body_size`
 
-Meaning:
-
-- `margins.*`: page margins
-- `characters_per_line`: full-width Japanese character count target
-- `lines_per_page`: total line slots per page, including blank lines
-- `body_size`: body text size for both Latin and Japanese text
-
-### Kanbun
-
-You can adjust:
+Kanbun settings:
 
 - `kanbun.side.gap`
 - `kanbun.side.min_width`
@@ -242,41 +124,17 @@ You can adjust:
 - `kanbun.okurigana.shift.down`
 - `kanbun.okurigana.shift.left`
 
-Meaning:
+## Units
 
-- `size`: font size of that annotation layer
-- `shift.up`: move upward
-- `shift.right`: move right
-- `shift.down`: move downward
-- `shift.left`: move left
-- `side.gap`: distance between the base character area and the right-side annotation column
-- `side.min_width`: minimum reserved width for right-side annotations
-
-## 9. Allowed units
-
-### Margins and body size
-
-These must use physical units:
+Physical layout units:
 
 - `pt`
 - `mm`
 - `cm`
 - `in`
 
-Examples:
+Kanbun annotation units also allow:
 
-- `12pt`
-- `3cm`
-- `25mm`
-
-### Kanbun sizes and shifts
-
-These can use TeX dimensions such as:
-
-- `pt`
-- `mm`
-- `cm`
-- `in`
 - `bp`
 - `dd`
 - `cc`
@@ -286,138 +144,71 @@ These can use TeX dimensions such as:
 - `zw`
 - `zh`
 
-Examples:
+## Validation
 
-- `1pt`
-- `0.35ex`
-- `0.10zw`
+The CLI validates settings before LaTeX runs.
 
-## 10. Validation rules
-
-The CLI rejects invalid combinations before building.
-
-Important rules:
+Important checks:
 
 - `characters_per_line` must be an integer and at least `2`
 - `lines_per_page` must be an integer and at least `1`
-- `body_size` must be positive
+- body size must be positive
 - kanbun `size` values must be positive
 - kanbun `shift` values must be nonnegative
-- impossible layouts are rejected if they would require negative character spacing
+- impossible layouts that require negative `kanjiskip` are rejected
 
-A common failure is this:
-
-- too many characters per line with too large a font size and unchanged margins
-
-Example:
-
-- `40` characters per line at `12pt` is intentionally rejected in the current test suite
-
-## 11. Kanbun syntax in Markdown
-
-The Markdown syntax is still:
+## Kanbun Markdown Syntax
 
 ```markdown
 [Base]{f="furigana" o="okurigana" k="kaeriten"}
 ```
 
-Example:
+Meaning:
 
-```markdown
-[世]{f="yo" o="ni" k="ni"}[有]{f="a" o="ri" k="ichi"}
-```
+- `f`: furigana
+- `o`: okurigana
+- `k`: kaeriten
 
-The current filter reads:
-
-- `f` = furigana
-- `o` = okurigana
-- `k` = kaeriten
-
-## 12. Recommended testing loop
-
-When you want to tune one thing at a time:
+## Recommended Adjustment Loop
 
 1. Change one parameter.
-2. Rebuild the PDF.
-3. Compare the PDF visually.
-4. If needed, inspect the generated TeX with `--emit-tex`.
+2. Rebuild with `--emit-tex`.
+3. Inspect the PDF.
+4. If needed, inspect the emitted TeX.
 
 Fast loop:
 
 ```bash
-ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
+ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
 ```
 
-## 13. Visual regression report
+## Visual Regression Report
 
-There is also a visual suite that renders multiple variations and converts the resulting PDFs to images.
-
-Run it with:
+Generate the suite:
 
 ```bash
 ruby scripts/run_visual_suite.rb
 ```
 
-Open the generated report:
+Open:
 
-- `out/variation-suite/report.html`
+```text
+out/variation-suite/report.html
+```
 
-This report includes:
+The suite covers:
 
 - layout variations
-- default kanbun baseline
-- separate furigana / kaeriten / okurigana movement tests
-- embedded rendered images for quick comparison
+- baseline kanbun rendering
+- furigana movement
+- kaeriten movement
+- okurigana movement
 
-## 14. Good starting experiments
+## Files Worth Editing
 
-If you want a safe place to start, try these one at a time:
-
-### Layout tests
-
-- change `characters_per_line` from `30` to `28`
-- change `lines_per_page` from `30` to `32`
-- change `body_size` from `12pt` to `11pt`
-- keep margins fixed and see how spacing is recalculated
-
-### Kanbun tests
-
-- raise furigana: `kanbun.furigana.shift.up: 1pt`
-- move kaeriten right: `kanbun.kaeriten.shift.right: 1pt`
-- move okurigana down: `kanbun.okurigana.shift.down: 1pt`
-- enlarge furigana only: `kanbun.furigana.size: 8pt`
-- enlarge okurigana only: `kanbun.okurigana.size: 8pt`
-
-## 15. Typical commands
-
-Default build:
-
-```bash
-ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
-```
-
-Build with alternate config:
-
-```bash
-ruby bin/jpmd build document.md -o out/document-test.pdf --emit-tex out/document-test.tex --config jpmd.test.yml
-```
-
-Show CLI help:
-
-```bash
-ruby bin/jpmd --help
-```
-
-## 16. Files worth editing
-
-- Main content: `document.md`
-- Project defaults: `jpmd.yml`
-- Kanbun TeX template: `templates/preamble.tex.erb`
-- Visual suite cases: `test/variation_suite.yml`
-- Visual suite runner: `scripts/run_visual_suite.rb`
-
-## 17. Notes
-
-- This repo currently builds with `LuaLaTeX`, not `XeLaTeX`.
-- Quote blocks, citations, footer formatting, and the current house style are preserved by the existing template/preamble pipeline.
-- If a build fails, read the CLI error first; most parameter mistakes are caught before LaTeX runs.
+- `examples/academic-paper.md`
+- `examples/minimal-kanbun.md`
+- `jpmd.yml`
+- `templates/preamble.tex.erb`
+- `test/variation_suite.yml`
+- `scripts/run_visual_suite.rb`
