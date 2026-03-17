@@ -1,0 +1,162 @@
+\usepackage[match]{luatexja-fontspec}
+\renewcommand{\jlreqkanjiskip}{<%= kanjiskip %> plus 0.1pt minus 0.1pt}
+<%= latin_font_setup %>
+<%= japanese_font_setup %>
+
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{1\baselineskip}{0pt}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
+\interfootnotelinepenalty=10000
+\makeatletter
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\renewcommand{\@makefnmark}{\hbox{\@textsuperscript{\normalfont\@thefnmark}}}
+\long\def\@makefntext#1{%
+  \begingroup
+  \ltjsetparameter{kanjiskip=0pt plus .25\zw minus 0pt}%
+  \parindent 1em%
+  \noindent
+  \hb@xt@3em{\hss\@makefnmark\hspace{0.8em}}#1%
+  \par
+  \endgroup
+}
+\renewcommand{\footnoterule}{%
+  \kern -3pt
+  \hrule width 0.38\columnwidth
+  \kern 2.6pt
+}
+\makeatother
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  \fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
+}
+
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{etoolbox}
+\AtBeginEnvironment{figure}{\centering}
+\AtBeginEnvironment{table}{\centering}
+\setlength{\LTleft}{\fill}
+\setlength{\LTright}{\fill}
+
+\usepackage[justification=centering]{caption}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=bottom}
+
+\usepackage{luatexja-ruby}
+\newsavebox{\kanbunbasebox}
+\newsavebox{\kanbunmainbox}
+\newsavebox{\kanbunfuriganabox}
+\newsavebox{\kanbunkaeribox}
+\newsavebox{\kanbunokuribox}
+\newdimen\kanbunmainsideoffset
+\newcommand{\kanbunifempty}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
+\newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
+\newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
+\newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
+\newcommand{\kanbunsidegap}{<%= side_gap %>}
+\newcommand{\kanbunsideminwidth}{<%= side_min_width %>}
+\newcommand{\kanbunfuriganashiftx}{\dimexpr <%= furigana_right %> - <%= furigana_left %>\relax}
+\newcommand{\kanbunfuriganashifty}{\dimexpr <%= furigana_up %> - <%= furigana_down %>\relax}
+\newcommand{\kanbunkaeritenshiftx}{\dimexpr <%= kaeriten_right %> - <%= kaeriten_left %>\relax}
+\newcommand{\kanbunkaeritenshifty}{\dimexpr <%= kaeriten_up %> - <%= kaeriten_down %>\relax}
+\newcommand{\kanbunkaeritenshiftleft}{<%= kaeriten_left %>}
+\newcommand{\kanbunkaeritenshiftright}{<%= kaeriten_right %>}
+\newcommand{\kanbunokuriganashiftx}{\dimexpr <%= okurigana_right %> - <%= okurigana_left %>\relax}
+\newcommand{\kanbunokuriganashifty}{\dimexpr <%= okurigana_up %> - <%= okurigana_down %>\relax}
+\newcommand{\kanbunokuriganishiftleft}{<%= okurigana_left %>}
+\newcommand{\kanbunokuriganishiftright}{<%= okurigana_right %>}
+\newcommand{\kanbunplacewithin}[3]{%
+  \hbox to #1{%
+    \hss
+    \kern #2\relax
+    #3%
+    \kern -#2\relax
+    \hss
+  }%
+}
+\newcommand{\kanbunplaceside}[4]{%
+  \hbox to #1{%
+    \hskip #2\relax
+    \rlap{\hskip #3\relax #4}%
+    \hss
+  }%
+}
+\newcommand{\kanbunsetmainsideoffset}{%
+  \kanbunmainsideoffset=0pt\relax
+  \ifdim\wd\kanbunmainbox>\wd\kanbunbasebox
+    \kanbunmainsideoffset=\dimexpr(\wd\kanbunmainbox-\wd\kanbunbasebox)/2\relax
+  \fi
+}
+\newcommand{\kanbunbuildmainbox}[2]{%
+  \kanbunifempty{#2}{%
+    \sbox{\kanbunmainbox}{\usebox{\kanbunbasebox}}%
+  }{%
+    \sbox{\kanbunfuriganabox}{{\kanbunfuriganafont #2}}%
+    \sbox{\kanbunmainbox}{%
+      \ruby{#1}{%
+        \kanbunplacewithin{\wd\kanbunfuriganabox}{\kanbunfuriganashiftx}{%
+          \raisebox{\kanbunfuriganashifty}[0pt][0pt]{\usebox{\kanbunfuriganabox}}%
+        }%
+      }%
+    }%
+  }%
+}
+\newcommand{\kanbun}[4]{%
+  \leavevmode
+  \begingroup
+  \sbox{\kanbunbasebox}{#1}%
+  \kanbunbuildmainbox{#1}{#2}%
+  \kanbunsetmainsideoffset%
+  \kanbunifempty{#3#4}{%
+    \usebox{\kanbunmainbox}%
+  }{%
+    \sbox{\kanbunkaeribox}{{\kanbunkaeritenfont #4}}%
+    \sbox{\kanbunokuribox}{{\kanbunokuriganafont #3}}%
+    \dimen0=\kanbunsideminwidth\relax
+    \kanbunifempty{#4}{}{%
+      \dimen2=\dimexpr\wd\kanbunkaeribox+\kanbunkaeritenshiftleft+\kanbunkaeritenshiftright\relax
+      \ifdim\dimen2>\dimen0
+        \dimen0=\dimen2
+      \fi
+    }%
+    \kanbunifempty{#3}{}{%
+      \dimen2=\dimexpr\wd\kanbunokuribox+\kanbunokuriganishiftleft+\kanbunokuriganishiftright\relax
+      \ifdim\dimen2>\dimen0
+        \dimen0=\dimen2
+      \fi
+    }%
+    \hbox{%
+      \usebox{\kanbunmainbox}%
+      \kern-\kanbunmainsideoffset\relax
+      \kern\kanbunsidegap\relax
+      \hbox to \dimen0{%
+        \kanbunifempty{#4}{}{%
+          \rlap{%
+            \raisebox{\dimexpr\ht\kanbunbasebox-.5\ht\kanbunkaeribox+.5\dp\kanbunkaeribox+\kanbunkaeritenshifty\relax}[0pt][0pt]{%
+              \kanbunplaceside{\dimen0}{\kanbunkaeritenshiftleft}{\kanbunkaeritenshiftx}{\usebox{\kanbunkaeribox}}%
+            }%
+          }%
+        }%
+        \kanbunifempty{#3}{}{%
+          \rlap{%
+            \raisebox{\dimexpr-\dp\kanbunbasebox-.5\ht\kanbunokuribox+.5\dp\kanbunokuribox+\kanbunokuriganashifty\relax}[0pt][0pt]{%
+              \kanbunplaceside{\dimen0}{\kanbunokuriganishiftleft}{\kanbunokuriganashiftx}{\usebox{\kanbunokuribox}}%
+            }%
+          }%
+        }%
+        \hss
+      }%
+    }%
+  }%
+  \endgroup
+}

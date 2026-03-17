@@ -1,127 +1,152 @@
-# kanbun-parser
+# Kanbun Parser
 
-Languages: [English](README.md) | [日本語](README.ja.md) | 繁體中文（台灣）
+語言: [English](README.md) | [日本語](README.ja.md) | 繁體中文（台灣）
 
-`kanbun-parser` 是一個精簡的參考型儲存庫，用來把帶有漢文訓點標記的日文 Markdown 編譯成 PDF。現在的 `main` 工作流程很直接：Pandoc 讀取 Markdown，`filter.lua` 把漢文 span 轉成 TeX 巨集，最後由 LuaLaTeX 產生 PDF。
+Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯成 PDF，並支援漢文訓讀常見的三種注記：
 
-## 這個儲存庫包含什麼
+- 振假名
+- 送假名
+- 返點
 
-- [document.md](document.md): 完整範例，包含引文、文獻引用與漢文標記。
-- [document.pdf](document.pdf): 上述範例的參考輸出 PDF。
-- [filter.lua](filter.lua): 將 bracketed span 轉成 `\kanbun{...}{...}{...}{...}` 的 Pandoc Lua filter。
-- [preamble.tex](preamble.tex): 日文版面設定與漢文巨集定義。
-- [template.tex](template.tex): 建置用的 Pandoc LaTeX 樣板。
-- [references/](references/): 範例書目資料與 CSL 樣式。
-- [examples/minimal-kanbun.md](examples/minimal-kanbun.md): 只測試漢文編譯的最小範例。
-- [docs/images/readme-final-result.png](docs/images/readme-final-result.png): 下方 README 預覽圖。
+這個 repo 主要服務兩種情境：
 
-## 快速開始
+- 已經有完整 Markdown 文件，要排成日文學術風格 PDF
+- 只想快速把一段漢文編譯出來
 
-需求:
+## Repo 主要內容
 
-- `pandoc`
-- `lualatex`
-- TeX Live 或 MiKTeX，並包含 `jlreq`、`luatexja-fontspec`、`luatexja-ruby`、`titlesec`、`fancyhdr`、`caption`、`longtable`、`booktabs`、`etoolbox`
-- `Times New Roman`
-- `MS Mincho`
+- `bin/jpmd` / `bin/jpmd.cmd`: CLI 入口
+- `jpmd.yml`: 專案預設版面設定
+- `examples/academic-paper.md`: 完整論文範例
+- `examples/minimal-kanbun.md`: 只測漢文的最小範例
+- `examples/scripts/`: Linux / Windows 範例腳本
+- `filter.lua`: Pandoc 過濾器，將漢文標記轉成 TeX
+- `templates/preamble.tex.erb`: 組版與漢文註記模板
+- `scripts/run_visual_suite.rb`: 產生 `out/variation-suite/report.html`
+- `docs/images/readme-final-result.png`: 本 README 使用的範例輸出預覽圖
+- `AGENTS.md`: 給 AI agent 的機器導向安裝文件
 
-請在儲存庫根目錄執行指令。`main` 上的範例假設 LuaLaTeX 能找到 `Times New Roman` 與 `MS Mincho`。
+## 先用哪個範例
 
-**Linux**
+如果你已經有完整的 Markdown 文章，從 `examples/academic-paper.md` 開始。
 
-```bash
-mkdir -p out
-pandoc document.md \
-  -f markdown+bracketed_spans \
-  --standalone \
-  --citeproc \
-  --template template.tex \
-  --lua-filter filter.lua \
-  -t latex \
-  -o out/document.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out out/document.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out out/document.tex
+如果你只是想編譯漢文，從 `examples/minimal-kanbun.md` 開始。這個檔案刻意只保留最基本的漢文語法。
+
+```markdown
+[世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-**Windows PowerShell**
+## Linux 設定
+
+以下以 Debian / Ubuntu 類系統為例。Linux 會自動使用 `vendor/fonts/` 內的字型檔。
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl fontconfig git pandoc perl poppler-utils python3-pil ruby tar xz-utils
+```
+
+安裝 TeX Live 2025，並加入這些套件：
+
+```bash
+/path/to/texlive/2025/bin/x86_64-linux/tlmgr install jlreq luatexja titlesec haranoaji lualatex-math selnolig
+```
+
+接著驗證並編譯：
+
+```bash
+git clone https://github.com/PPKan/kanbun-parser.git
+cd kanbun-parser
+export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
+ruby -Itest test/jpmd_config_test.rb
+ruby -Itest test/jpmd_compiler_test.rb
+ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
+```
+
+預期輸出：
+
+```text
+Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
+Wrote /path/to/kanbun-parser/out/academic-paper.pdf
+```
+
+會得到的檔案：
+
+- `out/minimal-kanbun.pdf`: 漢文最小範例的 PDF
+- `out/minimal-kanbun.tex`: 方便檢查的 TeX 輸出
+- `out/academic-paper.pdf`: 完整論文範例的 PDF
+- `out/academic-paper.tex`: 方便檢查的 TeX 輸出
+
+也可以直接跑範例腳本：
+
+```bash
+bash examples/scripts/build-linux.sh
+```
+
+## Windows 設定
+
+請使用 PowerShell。先安裝並確認下列工具已在 `PATH`：
+
+- Git
+- Ruby
+- Pandoc
+- TeX Live 2025
+
+Windows 端必須真的安裝這兩套字型：
+
+- Times New Roman
+- MS Mincho
+
+加入 TeX 套件：
 
 ```powershell
-New-Item -ItemType Directory -Path out -Force | Out-Null
-pandoc .\document.md `
-  -f markdown+bracketed_spans `
-  --standalone `
-  --citeproc `
-  --template .\template.tex `
-  --lua-filter .\filter.lua `
-  -t latex `
-  -o .\out\document.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out .\out\document.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out .\out\document.tex
+C:\texlive\2025\bin\windows\tlmgr.bat install jlreq luatexja titlesec haranoaji lualatex-math selnolig
 ```
 
-## 如果你只想編譯漢文
+之後驗證並編譯：
 
-使用 [examples/minimal-kanbun.md](examples/minimal-kanbun.md)；這個檔案沒有引用與完整論文框架，只保留最小的漢文測試內容。
-
-```md
-[世]{f="よ" o="ニ" k="二"}[有]{f="あ" o="リ" k="一"}[伯]{f="はく"}[樂]{f="らく"}。
+```powershell
+git clone https://github.com/PPKan/kanbun-parser.git
+cd kanbun-parser
+ruby -Itest test/jpmd_config_test.rb
+ruby -Itest test/jpmd_compiler_test.rb
+.\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
+.\bin\jpmd.cmd build .\examples\academic-paper.md -o .\out\academic-paper.pdf --emit-tex .\out\academic-paper.tex
 ```
 
-編譯方式相同，只要換掉輸入檔案：
+也可以跑 PowerShell 範例腳本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\examples\scripts\build-windows.ps1
+```
+
+## Visual Suite
 
 ```bash
-mkdir -p out
-pandoc examples/minimal-kanbun.md \
-  -f markdown+bracketed_spans \
-  --standalone \
-  --template template.tex \
-  --lua-filter filter.lua \
-  -t latex \
-  -o out/minimal-kanbun.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out out/minimal-kanbun.tex
-lualatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory=out out/minimal-kanbun.tex
+ruby scripts/run_visual_suite.rb
 ```
 
-## 預期輸出
-
-Pandoc 成功時通常不會顯示太多訊息。最後一次 LuaLaTeX 應該會出現類似這樣的行：
+預期輸出：
 
 ```text
-Output written on out/document.pdf (6 pages, ... bytes).
+Wrote /path/to/kanbun-parser/out/variation-suite/report.md
+Wrote /path/to/kanbun-parser/out/variation-suite/report.html
 ```
 
-最小漢文範例則會是：
+產生的報告在：
 
 ```text
-Output written on out/minimal-kanbun.pdf (... pages, ... bytes).
+out/variation-suite/report.html
 ```
 
-完成後應該會看到：
+## 輸出預覽
 
-- `out/document.tex`
-- `out/document.pdf`
-- `out/minimal-kanbun.tex`
-- `out/minimal-kanbun.pdf`
+下圖來自以目前 CLI 設定編譯 `examples/academic-paper.md` 後的輸出結果。
 
-## 最終結果示意
+![輸出預覽](docs/images/readme-final-result.png)
 
-下面的預覽圖來自已追蹤的 [document.pdf](document.pdf)，代表這個儲存庫在 `main` 分支上希望達成的輸出風格。
+## 補充
 
-![最終結果示意](docs/images/readme-final-result.png)
-
-參考 PDF: [document.pdf](document.pdf)
-
-## 重要檔案
-
-- [document.md](document.md): 含文獻與漢文標記的完整範例。
-- [examples/minimal-kanbun.md](examples/minimal-kanbun.md): 只想測試漢文時最快可用的起點。
-- [filter.lua](filter.lua): 把 bracketed span 轉成 TeX。
-- [preamble.tex](preamble.tex): 版面、字型與漢文配置設定。
-- [template.tex](template.tex): Pandoc 的 LaTeX 樣板。
-
-## 備註
-
-- 請從儲存庫根目錄執行，讓 `\input{preamble.tex}` 能正確找到檔案。
-- Linux 上最常見的失敗原因是缺字型；請先安裝或註冊 `Times New Roman` 與 `MS Mincho`。
-- 即使輸入相同，不同版本的 TeX Live 仍可能造成些微換行差異。
-- `out/` 是生成用工作目錄，隨時可以刪除。
+- `out/` 是產物目錄，預設不納入 Git。
+- 全域設定在 `jpmd.yml`，單一文件可用 `jpmd:` frontmatter 覆寫。
+- 更細的說明請看 `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md`。
