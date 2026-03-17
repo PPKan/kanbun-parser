@@ -27,13 +27,23 @@
   \usepackage[]{microtype}
   \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
 \usepackage{xcolor}
 \usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=3cm]{geometry}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\input{/tmp/jpmd-20260317-7639-4mp94m/preamble.tex}
+\input{/tmp/jpmd-20260317-8072-m1tf0m/preamble.tex}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -61,20 +71,20 @@ tester@example.jp
 \end{flushright}
 \vspace{\baselineskip}
 
-本ページは、振り仮名、返り点、送り仮名の位置とサイズを切り替えたときに、本文との干渉や引用ブロック内での下がり量がどのように見えるかを確認するための専用サンプルである。
+　本ページは、振り仮名、返り点、送り仮名の位置とサイズを切り替えたときに、本文との干渉や引用ブロック内での下がり量がどのように見えるかを確認するための専用サンプルである。
 
 \hypertarget{ux6a19ux6e96ux4f4dux7f6e}{%
 \section{標準位置}\label{ux6a19ux6e96ux4f4dux7f6e}}
 
-\kanbun{世}{}{ニ}{}\kanbun{有}{}{リ}{二}\kanbun{伯}{はく}{}{}\kanbun{樂}{らく}{}{一}、\kanbun{然}{しか}{ル}{}\kanbun{後}{}{ニ}{}\kanbun{有}{あ}{リ}{二}\kanbun{千}{せん}{}{}\kanbun{里}{り}{}{}\kanbun{馬}{ば}{}{一}。
+　\kanbun{世}{}{ニ}{}\kanbun{有}{}{リ}{二}\kanbun{伯}{はく}{}{}\kanbun{樂}{らく}{}{一}、\kanbun{然}{しか}{ル}{}\kanbun{後}{}{ニ}{}\kanbun{有}{あ}{リ}{二}\kanbun{千}{せん}{}{}\kanbun{里}{り}{}{}\kanbun{馬}{ば}{}{一}。
 
 \hypertarget{ux5f15ux7528ux5185ux306eux914dux7f6e}{%
 \section{引用内の配置}\label{ux5f15ux7528ux5185ux306eux914dux7f6e}}
 
 \begin{quote}
-\kanbun{學}{がく}{}{}\kanbun{而}{じ}{}{}\kanbun{時}{とき}{}{}\kanbun{習}{なら}{フ}{}\kanbun{之}{これ}{}{}、\kanbun{不}{ず}{}{}\kanbun{亦}{また}{}{}\kanbun{説}{よろこ}{バ}{}\kanbun{乎}{や}{}{}。
+　\kanbun{學}{がく}{}{}\kanbun{而}{じ}{}{}\kanbun{時}{とき}{}{}\kanbun{習}{なら}{フ}{}\kanbun{之}{これ}{}{}、\kanbun{不}{ず}{}{}\kanbun{亦}{また}{}{}\kanbun{説}{よろこ}{バ}{}\kanbun{乎}{や}{}{}。
 \end{quote}
 
-設定変更時には、振り仮名の上下左右移動、返り点と送り仮名の側注幅、そして引用内での安定性をまとめて観察する。
+　設定変更時には、振り仮名の上下左右移動、返り点と送り仮名の側注幅、そして引用内での安定性をまとめて観察する。
 
 \end{document}
