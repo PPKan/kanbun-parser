@@ -89,6 +89,20 @@ ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-
 ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
 ```
 
+Expected output:
+
+```text
+Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
+Wrote /path/to/kanbun-parser/out/academic-paper.pdf
+```
+
+Generated files:
+
+- `out/minimal-kanbun.pdf`: compiled kanbun-only sample
+- `out/minimal-kanbun.tex`: emitted TeX for inspection
+- `out/academic-paper.pdf`: compiled full document sample
+- `out/academic-paper.tex`: emitted TeX for inspection
+
 You can also run the sample Linux script:
 
 ```bash
@@ -145,6 +159,13 @@ Generate the variation report with:
 
 ```bash
 ruby scripts/run_visual_suite.rb
+```
+
+Expected output:
+
+```text
+Wrote /path/to/kanbun-parser/out/variation-suite/report.md
+Wrote /path/to/kanbun-parser/out/variation-suite/report.html
 ```
 
 Then open:

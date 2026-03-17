@@ -62,6 +62,20 @@ ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-
 ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
 ```
 
+預期輸出：
+
+```text
+Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
+Wrote /path/to/kanbun-parser/out/academic-paper.pdf
+```
+
+會得到的檔案：
+
+- `out/minimal-kanbun.pdf`: 漢文最小範例的 PDF
+- `out/minimal-kanbun.tex`: 方便檢查的 TeX 輸出
+- `out/academic-paper.pdf`: 完整論文範例的 PDF
+- `out/academic-paper.tex`: 方便檢查的 TeX 輸出
+
 也可以直接跑範例腳本：
 
 ```bash
@@ -109,6 +123,13 @@ powershell -ExecutionPolicy Bypass -File .\examples\scripts\build-windows.ps1
 
 ```bash
 ruby scripts/run_visual_suite.rb
+```
+
+預期輸出：
+
+```text
+Wrote /path/to/kanbun-parser/out/variation-suite/report.md
+Wrote /path/to/kanbun-parser/out/variation-suite/report.html
 ```
 
 產生的報告在：

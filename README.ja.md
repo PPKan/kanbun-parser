@@ -62,6 +62,20 @@ ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-
 ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
 ```
 
+想定される出力:
+
+```text
+Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
+Wrote /path/to/kanbun-parser/out/academic-paper.pdf
+```
+
+生成されるファイル:
+
+- `out/minimal-kanbun.pdf`: 漢文だけのサンプル PDF
+- `out/minimal-kanbun.tex`: 確認用に出力された TeX
+- `out/academic-paper.pdf`: 論文形式サンプル PDF
+- `out/academic-paper.tex`: 確認用に出力された TeX
+
 サンプルスクリプトも使えます。
 
 ```bash
@@ -109,6 +123,13 @@ powershell -ExecutionPolicy Bypass -File .\examples\scripts\build-windows.ps1
 
 ```bash
 ruby scripts/run_visual_suite.rb
+```
+
+想定される出力:
+
+```text
+Wrote /path/to/kanbun-parser/out/variation-suite/report.md
+Wrote /path/to/kanbun-parser/out/variation-suite/report.html
 ```
 
 生成物:
