@@ -1,5 +1,4 @@
 ---
-numbersections: true
 indent: true
 bibliography: references/sample-zotero.json
 csl: references/word-japanese-note.csl

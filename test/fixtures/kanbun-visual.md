@@ -1,5 +1,4 @@
 ---
-numbersections: true
 indent: true
 jpmd:
   preset: academic
