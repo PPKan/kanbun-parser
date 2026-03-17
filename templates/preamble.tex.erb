@@ -58,6 +58,7 @@
 \newsavebox{\kanbunfuriganabox}
 \newsavebox{\kanbunkaeribox}
 \newsavebox{\kanbunokuribox}
+\newdimen\kanbunmainsideoffset
 \newcommand{\kanbunifempty}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
 \newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
 \newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
@@ -90,17 +91,21 @@
     \hss
   }%
 }
+\newcommand{\kanbunsetmainsideoffset}{%
+  \kanbunmainsideoffset=0pt\relax
+  \ifdim\wd\kanbunmainbox>\wd\kanbunbasebox
+    \kanbunmainsideoffset=\dimexpr(\wd\kanbunmainbox-\wd\kanbunbasebox)/2\relax
+  \fi
+}
 \newcommand{\kanbunbuildmainbox}[2]{%
   \kanbunifempty{#2}{%
     \sbox{\kanbunmainbox}{\usebox{\kanbunbasebox}}%
   }{%
     \sbox{\kanbunfuriganabox}{{\kanbunfuriganafont #2}}%
     \sbox{\kanbunmainbox}{%
-      \makebox[\wd\kanbunbasebox][c]{%
-        \ruby{#1}{%
-          \kanbunplacewithin{\wd\kanbunfuriganabox}{\kanbunfuriganashiftx}{%
-            \raisebox{\kanbunfuriganashifty}[0pt][0pt]{\usebox{\kanbunfuriganabox}}%
-          }%
+      \ruby{#1}{%
+        \kanbunplacewithin{\wd\kanbunfuriganabox}{\kanbunfuriganashiftx}{%
+          \raisebox{\kanbunfuriganashifty}[0pt][0pt]{\usebox{\kanbunfuriganabox}}%
         }%
       }%
     }%
@@ -111,6 +116,7 @@
   \begingroup
   \sbox{\kanbunbasebox}{#1}%
   \kanbunbuildmainbox{#1}{#2}%
+  \kanbunsetmainsideoffset%
   \kanbunifempty{#3#4}{%
     \usebox{\kanbunmainbox}%
   }{%
@@ -131,6 +137,7 @@
     }%
     \hbox{%
       \usebox{\kanbunmainbox}%
+      \kern-\kanbunmainsideoffset\relax
       \kern\kanbunsidegap\relax
       \hbox to \dimen0{%
         \kanbunifempty{#4}{}{%

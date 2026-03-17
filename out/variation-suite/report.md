@@ -1,6 +1,6 @@
 # Visual Variation Suite
 
-Generated at: 2026-03-16 13:50:35 +0000
+Generated at: 2026-03-17 08:18:10 +0000
 
 - Total cases: `19`
 - Passed: `19`
@@ -29,14 +29,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/chars-20.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/chars-20.pdf
 ```
 
 ### Representative Pages
 
-![chars-20-1.png](/root/kanbun-parser/out/variation-suite/pages/chars-20-1.png)
+![chars-20-1.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-20-1.png)
 
-![chars-20-7.png](/root/kanbun-parser/out/variation-suite/pages/chars-20-7.png)
+![chars-20-7.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-20-7.png)
 
 ## 30 Characters Per Line (`PASS`)
 
@@ -61,14 +61,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/chars-30-default.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/chars-30-default.pdf
 ```
 
 ### Representative Pages
 
-![chars-30-default-1.png](/root/kanbun-parser/out/variation-suite/pages/chars-30-default-1.png)
+![chars-30-default-1.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-30-default-1.png)
 
-![chars-30-default-6.png](/root/kanbun-parser/out/variation-suite/pages/chars-30-default-6.png)
+![chars-30-default-6.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-30-default-6.png)
 
 ## 40 Characters Per Line At 12pt (`PASS`)
 
@@ -117,14 +117,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/chars-40-at-10pt.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/chars-40-at-10pt.pdf
 ```
 
 ### Representative Pages
 
-![chars-40-at-10pt-1.png](/root/kanbun-parser/out/variation-suite/pages/chars-40-at-10pt-1.png)
+![chars-40-at-10pt-1.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-40-at-10pt-1.png)
 
-![chars-40-at-10pt-6.png](/root/kanbun-parser/out/variation-suite/pages/chars-40-at-10pt-6.png)
+![chars-40-at-10pt-6.png](/workspace/kanbun-parser/out/variation-suite/pages/chars-40-at-10pt-6.png)
 
 ## 20 Lines Per Page (`PASS`)
 
@@ -149,14 +149,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/lines-20.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/lines-20.pdf
 ```
 
 ### Representative Pages
 
-![lines-20-1.png](/root/kanbun-parser/out/variation-suite/pages/lines-20-1.png)
+![lines-20-1.png](/workspace/kanbun-parser/out/variation-suite/pages/lines-20-1.png)
 
-![lines-20-8.png](/root/kanbun-parser/out/variation-suite/pages/lines-20-8.png)
+![lines-20-8.png](/workspace/kanbun-parser/out/variation-suite/pages/lines-20-8.png)
 
 ## 40 Lines Per Page (`PASS`)
 
@@ -181,14 +181,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/lines-40.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/lines-40.pdf
 ```
 
 ### Representative Pages
 
-![lines-40-1.png](/root/kanbun-parser/out/variation-suite/pages/lines-40-1.png)
+![lines-40-1.png](/workspace/kanbun-parser/out/variation-suite/pages/lines-40-1.png)
 
-![lines-40-5.png](/root/kanbun-parser/out/variation-suite/pages/lines-40-5.png)
+![lines-40-5.png](/workspace/kanbun-parser/out/variation-suite/pages/lines-40-5.png)
 
 ## 10pt Body Text (`PASS`)
 
@@ -213,14 +213,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/font-10pt.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/font-10pt.pdf
 ```
 
 ### Representative Pages
 
-![font-10pt-1.png](/root/kanbun-parser/out/variation-suite/pages/font-10pt-1.png)
+![font-10pt-1.png](/workspace/kanbun-parser/out/variation-suite/pages/font-10pt-1.png)
 
-![font-10pt-6.png](/root/kanbun-parser/out/variation-suite/pages/font-10pt-6.png)
+![font-10pt-6.png](/workspace/kanbun-parser/out/variation-suite/pages/font-10pt-6.png)
 
 ## 14pt Body Text (`PASS`)
 
@@ -245,14 +245,14 @@ layout:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/font-14pt.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/font-14pt.pdf
 ```
 
 ### Representative Pages
 
-![font-14pt-1.png](/root/kanbun-parser/out/variation-suite/pages/font-14pt-1.png)
+![font-14pt-1.png](/workspace/kanbun-parser/out/variation-suite/pages/font-14pt-1.png)
 
-![font-14pt-6.png](/root/kanbun-parser/out/variation-suite/pages/font-14pt-6.png)
+![font-14pt-6.png](/workspace/kanbun-parser/out/variation-suite/pages/font-14pt-6.png)
 
 ## Default Kanbun Layout (`PASS`)
 
@@ -274,12 +274,12 @@ Wrote /root/kanbun-parser/out/variation-suite/pdfs/font-14pt.pdf
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kanbun-default.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kanbun-default.pdf
 ```
 
 ### Representative Pages
 
-![kanbun-default-1.png](/root/kanbun-parser/out/variation-suite/pages/kanbun-default-1.png)
+![kanbun-default-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kanbun-default-1.png)
 
 ## Large Kanbun Annotations (`PASS`)
 
@@ -325,12 +325,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kanbun-big-all.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kanbun-big-all.pdf
 ```
 
 ### Representative Pages
 
-![kanbun-big-all-1.png](/root/kanbun-parser/out/variation-suite/pages/kanbun-big-all-1.png)
+![kanbun-big-all-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kanbun-big-all-1.png)
 
 ## Furigana Shifted Up And Right (`PASS`)
 
@@ -360,12 +360,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/furigana-up-right.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/furigana-up-right.pdf
 ```
 
 ### Representative Pages
 
-![furigana-up-right-1.png](/root/kanbun-parser/out/variation-suite/pages/furigana-up-right-1.png)
+![furigana-up-right-1.png](/workspace/kanbun-parser/out/variation-suite/pages/furigana-up-right-1.png)
 
 ## Furigana Shifted Left And Down (`PASS`)
 
@@ -395,12 +395,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/furigana-left-down.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/furigana-left-down.pdf
 ```
 
 ### Representative Pages
 
-![furigana-left-down-1.png](/root/kanbun-parser/out/variation-suite/pages/furigana-left-down-1.png)
+![furigana-left-down-1.png](/workspace/kanbun-parser/out/variation-suite/pages/furigana-left-down-1.png)
 
 ## Kaeriten Shifted Up And Right (`PASS`)
 
@@ -432,12 +432,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kaeriten-up-right.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kaeriten-up-right.pdf
 ```
 
 ### Representative Pages
 
-![kaeriten-up-right-1.png](/root/kanbun-parser/out/variation-suite/pages/kaeriten-up-right-1.png)
+![kaeriten-up-right-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kaeriten-up-right-1.png)
 
 ## Kaeriten Shifted Left And Down (`PASS`)
 
@@ -469,12 +469,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kaeriten-left-down.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kaeriten-left-down.pdf
 ```
 
 ### Representative Pages
 
-![kaeriten-left-down-1.png](/root/kanbun-parser/out/variation-suite/pages/kaeriten-left-down-1.png)
+![kaeriten-left-down-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kaeriten-left-down-1.png)
 
 ## Okurigana Shifted Down And Right (`PASS`)
 
@@ -506,12 +506,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/okurigana-down-right.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/okurigana-down-right.pdf
 ```
 
 ### Representative Pages
 
-![okurigana-down-right-1.png](/root/kanbun-parser/out/variation-suite/pages/okurigana-down-right-1.png)
+![okurigana-down-right-1.png](/workspace/kanbun-parser/out/variation-suite/pages/okurigana-down-right-1.png)
 
 ## Okurigana Shifted Up And Left (`PASS`)
 
@@ -543,12 +543,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/okurigana-up-left.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/okurigana-up-left.pdf
 ```
 
 ### Representative Pages
 
-![okurigana-up-left-1.png](/root/kanbun-parser/out/variation-suite/pages/okurigana-up-left-1.png)
+![okurigana-up-left-1.png](/workspace/kanbun-parser/out/variation-suite/pages/okurigana-up-left-1.png)
 
 ## Kanbun Shifted Left And Down (`PASS`)
 
@@ -589,12 +589,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kanbun-shift-left-down.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kanbun-shift-left-down.pdf
 ```
 
 ### Representative Pages
 
-![kanbun-shift-left-down-1.png](/root/kanbun-parser/out/variation-suite/pages/kanbun-shift-left-down-1.png)
+![kanbun-shift-left-down-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kanbun-shift-left-down-1.png)
 
 ## Kanbun Shifted Right (`PASS`)
 
@@ -637,12 +637,12 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kanbun-shift-right.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kanbun-shift-right.pdf
 ```
 
 ### Representative Pages
 
-![kanbun-shift-right-1.png](/root/kanbun-parser/out/variation-suite/pages/kanbun-shift-right-1.png)
+![kanbun-shift-right-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kanbun-shift-right-1.png)
 
 ## Kanbun Mixed Sizes (`PASS`)
 
@@ -676,9 +676,9 @@ kanbun:
 ### Command Output
 
 ```text
-Wrote /root/kanbun-parser/out/variation-suite/pdfs/kanbun-mixed-sizes.pdf
+Wrote /workspace/kanbun-parser/out/variation-suite/pdfs/kanbun-mixed-sizes.pdf
 ```
 
 ### Representative Pages
 
-![kanbun-mixed-sizes-1.png](/root/kanbun-parser/out/variation-suite/pages/kanbun-mixed-sizes-1.png)
+![kanbun-mixed-sizes-1.png](/workspace/kanbun-parser/out/variation-suite/pages/kanbun-mixed-sizes-1.png)
