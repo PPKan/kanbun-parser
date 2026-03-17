@@ -1,109 +1,180 @@
 # Kanbun Parser
 
-This branch contains the Linux build work for the `parameterized-layout` pipeline.
+Languages: English | [日本語](README.ja.md) | [繁體中文](README.zh-Hant-TW.md)
 
-The important outputs on this branch are:
+Kanbun Parser is a Ruby CLI that turns Markdown into PDF through Pandoc and LuaLaTeX, with custom support for kanbun annotation layers:
 
-- `out/document.pdf`: the checked-in reference PDF from the original workflow
-- `out/document-linux.pdf`: the PDF rebuilt on Linux on this branch
+- furigana
+- okurigana
+- kaeriten
 
-The Linux build keeps the same font choices:
+It is meant for two common workflows:
 
-- `Times New Roman`
-- `MS Mincho`
+- full Japanese academic-style documents written in Markdown
+- small kanbun-only snippets when you only want to typeset a passage
 
-The branch also vendors the exact font files under `vendor/fonts/` so the build does not depend on a Windows font directory.
+## What The Repo Contains
 
-## Quick Start On A Clean Ubuntu 24.04 Container
+- `bin/jpmd` and `bin/jpmd.cmd`: CLI entrypoints for Linux and Windows
+- `jpmd.yml`: project-wide layout defaults
+- `examples/academic-paper.md`: full sample paper
+- `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
+- `examples/scripts/`: sample build scripts for Linux and Windows
+- `filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
+- `templates/preamble.tex.erb`: layout and kanbun TeX template
+- `scripts/run_visual_suite.rb`: generates `out/variation-suite/report.html`
+- `docs/dependencies.md`: dependency matrix
+- `docs/compile-and-adjust.md`: parameter and tuning guide
+- `AGENTS.md`: machine-oriented bootstrap document for AI agents
 
-All commands below are copy-pasteable. In this container they were run as `root`. If you are not `root`, prefix package-management commands with `sudo`.
+## Choose A Starting Example
+
+If you already have a complete Markdown document, start from `examples/academic-paper.md`.
+
+If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. That file is intentionally small and focuses only on the kanbun syntax:
+
+```markdown
+[世]{o="ニ"}[有]{o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}。
+```
+
+## Linux Setup
+
+These steps assume a Debian or Ubuntu style machine. The repo vendors the exact Linux font files under `vendor/fonts/`, so Linux builds do not need a Windows font directory.
 
 ### 1. Install base packages
 
 ```bash
-apt-get update
-apt-get install -y ca-certificates curl fontconfig git pandoc perl poppler-utils python3-pil ruby tar xz-utils
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl fontconfig git pandoc perl poppler-utils python3-pil ruby tar xz-utils
 ```
 
-### 2. Clone the repository and check out this branch
+### 2. Clone the repository
 
 ```bash
-cd /root
 git clone https://github.com/PPKan/kanbun-parser.git
 cd kanbun-parser
-git checkout linux-parameterized-layout
+export REPO_DIR="$(pwd)"
 ```
 
 ### 3. Install TeX Live 2025
 
-The checked-in reference PDF was produced by `LuaTeX-1.22.0`, so this setup uses the frozen TeX Live 2025 archive instead of the Ubuntu TeX packages. The profile file used for the local install is already committed at `docs/texlive-2025-root.profile`.
+The project was stabilized against TeX Live 2025.
 
 ```bash
 cd /tmp
 curl -L --fail -o install-tl-2025.tar.gz https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2025/tlnet-final/install-tl-unx.tar.gz
 mkdir -p /tmp/install-tl-2025
 tar -xzf install-tl-2025.tar.gz -C /tmp/install-tl-2025 --strip-components=1
-/tmp/install-tl-2025/install-tl --profile /root/kanbun-parser/docs/texlive-2025-root.profile --repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2025/tlnet-final
+/tmp/install-tl-2025/install-tl --profile "$REPO_DIR/docs/texlive-2025-root.profile" --repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2025/tlnet-final
 ```
 
-### 4. Install the TeX packages required by this repo
+### 4. Install the TeX packages used by this repo
 
 ```bash
-/root/texlive/2025/bin/x86_64-linux/tlmgr install jlreq luatexja titlesec haranoaji lualatex-math selnolig
+/path/to/texlive/2025/bin/x86_64-linux/tlmgr install jlreq luatexja titlesec haranoaji lualatex-math selnolig
 ```
 
-### 5. Return to the repo and verify the toolchain
+### 5. Verify
 
 ```bash
-cd /root/kanbun-parser
-ruby -v
-pandoc --version | head -n 2
-/root/texlive/2025/bin/x86_64-linux/lualatex --version | head -n 2
-```
-
-### 6. Run the tests
-
-```bash
+export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 ```
 
-### 7. Build the PDF
+### 6. Build the samples
 
 ```bash
-LUALATEX_PATH=/root/texlive/2025/bin/x86_64-linux/lualatex ruby bin/jpmd build document.md -o out/document-linux.pdf --emit-tex out/document-linux.tex
+ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
 ```
 
-### 8. Optional checks
+You can also run the sample Linux script:
 
 ```bash
-pdfinfo out/document-linux.pdf
-pdffonts out/document-linux.pdf
+bash examples/scripts/build-linux.sh
 ```
 
-## Files To Read
+## Windows Setup
 
-- `docs/container-bootstrap.md`: exact container initialization steps used during this work
-- `docs/dependencies.md`: dependency inventory
-- `docs/compile-and-adjust.md`: layout tuning notes
-- `Dockerfile`: reproducible image build
+Use PowerShell. Install these first and make sure they are on `PATH`:
 
-## Docker
+- Git
+- Ruby
+- Pandoc
+- TeX Live 2025
 
-Build the image:
+On Windows, the compiler expects the document fonts to be installed as real Windows fonts:
+
+- Times New Roman
+- MS Mincho
+
+It also expects `lualatex.exe` at `C:\texlive\2025\bin\windows\lualatex.exe`, unless you override it with `LUALATEX_PATH`.
+
+### 1. Install the required TeX packages
+
+```powershell
+C:\texlive\2025\bin\windows\tlmgr.bat install jlreq luatexja titlesec haranoaji lualatex-math selnolig
+```
+
+### 2. Clone and verify
+
+```powershell
+git clone https://github.com/PPKan/kanbun-parser.git
+cd kanbun-parser
+ruby -Itest test/jpmd_config_test.rb
+ruby -Itest test/jpmd_compiler_test.rb
+```
+
+### 3. Build the samples
+
+```powershell
+.\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
+.\bin\jpmd.cmd build .\examples\academic-paper.md -o .\out\academic-paper.pdf --emit-tex .\out\academic-paper.tex
+```
+
+You can also run the sample Windows script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\examples\scripts\build-windows.ps1
+```
+
+## Visual Regression Suite
+
+Generate the variation report with:
 
 ```bash
-docker build -t kanbun-parser:linux-parameterized-layout .
+ruby scripts/run_visual_suite.rb
 ```
 
-Open a shell in the container:
+Then open:
+
+```text
+out/variation-suite/report.html
+```
+
+Linux sample script:
 
 ```bash
-docker run --rm -it -v "$PWD:/workspace" kanbun-parser:linux-parameterized-layout
+bash examples/scripts/run-visual-suite-linux.sh
 ```
 
-Build the PDF inside Docker:
+Windows sample script:
 
-```bash
-docker run --rm -it -v "$PWD:/workspace" kanbun-parser:linux-parameterized-layout sh -lc 'ruby -Itest test/jpmd_config_test.rb && ruby -Itest test/jpmd_compiler_test.rb && ruby bin/jpmd build document.md -o out/document-linux.pdf --emit-tex out/document-linux.tex'
+```powershell
+powershell -ExecutionPolicy Bypass -File .\examples\scripts\run-visual-suite-windows.ps1
 ```
+
+## Notes
+
+- `out/` is intentionally ignored and should be treated as generated workspace output.
+- The main supported CLI command is `build`.
+- Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
+- `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
+
+## Further Reading
+
+- `docs/dependencies.md`
+- `docs/compile-and-adjust.md`
+- `docs/container-bootstrap.md`
+- `vendor/fonts/README.md`

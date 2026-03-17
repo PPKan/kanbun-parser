@@ -1,7 +1,0 @@
----
-default_preset: academic
-presets:
-  academic:
-    layout:
-      grid:
-        lines_per_page: 20

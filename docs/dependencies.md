@@ -1,10 +1,50 @@
 # Dependencies
 
-This file lists the dependencies needed to build the PDF on this branch.
+This file lists the requirements needed to build the CLI output on Linux or Windows.
 
-## Required OS Packages
+## Required Tools
 
-Install these packages on Ubuntu 24.04:
+Every supported machine needs:
+
+```text
+Ruby
+Pandoc
+LuaLaTeX
+```
+
+## Required TeX Release
+
+Use:
+
+```text
+TeX Live 2025
+LuaHBTeX 1.22.0
+```
+
+## Required TeX Packages
+
+Install these into the TeX Live 2025 tree:
+
+```text
+jlreq
+luatexja
+titlesec
+haranoaji
+lualatex-math
+selnolig
+```
+
+The committed TeX profile also enables:
+
+```text
+collection-basic
+collection-latex
+collection-latexrecommended
+```
+
+## Linux Package Baseline
+
+On Ubuntu 24.04 or a similar Debian-family system:
 
 ```text
 ca-certificates
@@ -20,41 +60,9 @@ tar
 xz-utils
 ```
 
-## Required TeX Live Release
+## Font Requirements
 
-Use:
-
-```text
-TeX Live 2025
-LuaHBTeX 1.22.0
-```
-
-The branch was debugged against other TeX versions, but the reference PDF was produced with `LuaTeX-1.22.0`, so the documented reproducible path uses TeX Live 2025.
-
-## Required TeX Packages
-
-Install these into the TeX Live 2025 tree:
-
-```text
-jlreq
-luatexja
-titlesec
-haranoaji
-lualatex-math
-selnolig
-```
-
-The TeX Live 2025 profile used in this repo also enables:
-
-```text
-collection-basic
-collection-latex
-collection-latexrecommended
-```
-
-## Vendored Font Assets
-
-The repo includes the font files required to keep the original font choices unchanged:
+Linux can use the vendored exact font files:
 
 ```text
 vendor/fonts/msmincho.ttc
@@ -64,7 +72,7 @@ vendor/fonts/timesbi.ttf
 vendor/fonts/timesi.ttf
 ```
 
-Those files are used to satisfy:
+Windows should have these fonts installed in the OS:
 
 ```text
 MS Mincho
@@ -75,7 +83,7 @@ Times New Roman
 
 No external gems are required.
 
-The Ruby code uses only the standard library:
+The current Ruby code uses the standard library only:
 
 ```text
 erb
@@ -84,13 +92,14 @@ open3
 optparse
 pathname
 rbconfig
+tempfile
 tmpdir
 yaml
 ```
 
 ## Optional Diagnostic Tools
 
-These were useful during comparison/debugging but are not required for the main build:
+Useful but not required:
 
 ```text
 mutool
