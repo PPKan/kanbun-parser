@@ -44,6 +44,18 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_pandoc_resource_path_includes_input_and_project_roots
+    with_temp_markdown do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+      compiler.instance_variable_set(:@project_root, File.dirname(config_path))
+
+      resource_path = compiler.send(:pandoc_resource_path).split(File::PATH_SEPARATOR)
+      assert_includes resource_path, File.dirname(input_path)
+      assert_includes resource_path, File.dirname(config_path)
+      assert_includes resource_path, JPMD::APP_ROOT
+    end
+  end
+
   private
 
   def compiler_for(input_path, config_path)

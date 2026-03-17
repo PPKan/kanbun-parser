@@ -35,7 +35,7 @@ module JPMD
 
     def build_command
       options = {
-        config_path: File.expand_path("jpmd.yml", Dir.pwd)
+        config_path: default_config_path(Dir.pwd)
       }
 
       parser = OptionParser.new do |opts|
@@ -85,8 +85,18 @@ module JPMD
     def root_usage
       <<~TEXT
         Usage:
-          jpmd build INPUT.md -o OUTPUT.pdf [--config jpmd.yml] [--preset academic] [--emit-tex out.tex]
+          jpmd build INPUT.md -o OUTPUT.pdf [--config PATH] [--preset academic] [--emit-tex out.tex]
       TEXT
+    end
+
+    def default_config_path(cwd)
+      candidates = [
+        File.expand_path("jpmd.yml", cwd),
+        File.expand_path("config/jpmd.yml", cwd),
+        JPMD::BUNDLED_CONFIG_PATH
+      ]
+
+      candidates.find { |path| File.file?(path) } || JPMD::BUNDLED_CONFIG_PATH
     end
   end
 end

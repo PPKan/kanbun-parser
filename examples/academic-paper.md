@@ -1,6 +1,6 @@
 ---
-bibliography: references/sample-zotero.json
-csl: references/word-japanese-note.csl
+bibliography: references/zotero-export.json
+csl: ../config/csl/chicago-notes-bibliography.csl
 suppress-bibliography: true
 jpmd:
   preset: academic
@@ -18,7 +18,7 @@ taro.yamada@example.jp
 \end{flushright}
 \vspace{\baselineskip}
 
-　本稿は、Pandoc と LuaLaTeX を用いた和文学術文書の作成環境を前提に、漢文訓読資料をテキストベースで記述しながら、印刷用 PDF においても安定した版面を維持するための実装例を示すものである。とりわけ、返り点、送り仮名、振り仮名を同時に付した漢字列は、一般的な Markdown 記法だけでは再現が難しく、研究ノート、授業配布資料、投稿原稿のいずれにおいても運用上の障害となってきた。本稿では、こうした障害を回避するために、原文の字順を保存したまま訓点情報のみを付加する方式を採用し、その意義と実装上の要点を整理する。本文中の典拠指示は Pandoc の citation syntax を用い、脚注形式で処理できる[@kawaguchi1966, pp. 471-472]。
+　本稿は、Pandoc と LuaLaTeX を用いた和文学術文書の作成環境を前提に、漢文訓読資料をテキストベースで記述しながら、印刷用 PDF においても安定した版面を維持するための実装例を示すものである。とりわけ、返り点、送り仮名、振り仮名を同時に付した漢字列は、一般的な Markdown 記法だけでは再現が難しく、研究ノート、授業配布資料、投稿原稿のいずれにおいても運用上の障害となってきた。本稿では、こうした障害を回避するために、原文の字順を保存したまま訓点情報のみを付加する方式を採用し、その意義と実装上の要点を整理する。本文中の典拠指示は Pandoc の citation syntax を用い、脚注形式で処理できる[@smith2020, pp. 45-46]。
 
 # はじめに
 

@@ -16,12 +16,17 @@ It is meant for two common workflows:
 ## What The Repo Contains
 
 - `bin/jpmd` and `bin/jpmd.cmd`: CLI entrypoints for Linux and Windows
-- `jpmd.yml`: project-wide layout defaults
+- `config/`: bundled, user-editable build configuration
+- `config/jpmd.yml`: default project settings and preset overrides
+- `config/pandoc/filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
+- `config/tex/`: jlreq template and preamble template
+- `config/csl/chicago-notes-bibliography.csl`: default general Zotero CSL for note-style citations
+- `config/csl/custom/`: older project-specific CSL variants kept for reference
 - `examples/academic-paper.md`: full sample paper
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
+- `examples/references/`: generic Zotero-exported BibTeX and CSL JSON samples for default testing
+- `examples/references/custom/`: older project-specific bibliography samples kept for reference
 - `examples/scripts/`: sample build scripts for Linux and Windows
-- `filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
-- `templates/preamble.tex.erb`: layout and kanbun TeX template
 - `scripts/run_visual_suite.rb`: generates `out/variation-suite/report.html`
 - `docs/dependencies.md`: dependency matrix
 - `docs/compile-and-adjust.md`: parameter and tuning guide
@@ -37,6 +42,49 @@ If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. Tha
 ```markdown
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
+
+## Configuration Folder
+
+Bundled build settings now live together under `config/` so users can tune the project without hunting through the repository.
+
+- `config/jpmd.yml`: layout defaults and preset overrides
+- `config/tex/template.tex`: base jlreq document shell
+- `config/tex/preamble.tex.erb`: fonts, spacing, and kanbun macro definitions
+- `config/pandoc/filter.lua`: bracketed-span to kanbun TeX conversion
+- `config/csl/chicago-notes-bibliography.csl`: default CSL file used by the academic-paper sample
+- `config/csl/custom/`: custom CSL files retained for reference-only use
+
+When you run `jpmd build`, the CLI looks for a config file in this order:
+
+1. `./jpmd.yml`
+2. `./config/jpmd.yml`
+3. bundled `config/jpmd.yml`
+
+Edit the bundled `config/` files if you want to tune this repository directly. If you want an isolated experiment, create another YAML file and pass it with `--config`.
+
+## Bibliography And Citation Files
+
+The academic sample keeps its citation inputs under `examples/references/`:
+
+- `examples/references/zotero-export.json`: default Zotero CSL JSON sample
+- `examples/references/zotero-export.bib`: default Zotero BibTeX sample
+- `config/csl/chicago-notes-bibliography.csl`: default general Zotero CSL
+- `examples/references/custom/` and `config/csl/custom/`: older project-specific samples kept with notes
+
+To swap in your own bibliography, edit the Markdown frontmatter:
+
+```yaml
+---
+bibliography: path/to/your-library.bib
+# or:
+# bibliography: path/to/your-library.json
+csl: ../config/csl/chicago-notes-bibliography.csl
+jpmd:
+  preset: academic
+---
+```
+
+Pandoc resolves `bibliography:` and `csl:` relative to the Markdown file that declares them. In `examples/academic-paper.md`, that means `references/...` and `../config/...`.
 
 ## Linux Setup
 
@@ -197,7 +245,7 @@ The preview below comes from the academic paper sample rendered with the current
 
 - `out/` is intentionally ignored and should be treated as generated workspace output.
 - The main supported CLI command is `build`.
-- Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
+- Project defaults come from `./jpmd.yml`, `./config/jpmd.yml`, or the bundled `config/jpmd.yml`; document-local overrides still come from `jpmd:` YAML frontmatter.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 
 ## Further Reading

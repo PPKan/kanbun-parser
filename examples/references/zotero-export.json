@@ -1,0 +1,44 @@
+[
+  {
+    "id": "smith2020",
+    "type": "book",
+    "author": [
+      {
+        "family": "Smith",
+        "given": "John"
+      }
+    ],
+    "title": "Reading Classical Texts in Digital Workflows",
+    "publisher": "Open Library Press",
+    "publisher-place": "New York",
+    "issued": {
+      "date-parts": [
+        [
+          2020
+        ]
+      ]
+    }
+  },
+  {
+    "id": "lee2022",
+    "type": "article-journal",
+    "author": [
+      {
+        "family": "Lee",
+        "given": "Mina"
+      }
+    ],
+    "title": "Markdown-Based Editorial Workflows for Classical Texts",
+    "container-title": "Journal of Digital Textual Studies",
+    "volume": "12",
+    "issue": "2",
+    "page": "33-58",
+    "issued": {
+      "date-parts": [
+        [
+          2022
+        ]
+      ]
+    }
+  }
+]

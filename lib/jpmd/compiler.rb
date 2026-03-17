@@ -13,7 +13,6 @@ module JPMD
   class Compiler
     WINDOWS_PANDOC = File.expand_path("~/AppData/Local/Pandoc/pandoc.exe")
     WINDOWS_LUALATEX = "C:/texlive/2025/bin/windows/lualatex.exe"
-    APP_ROOT = File.expand_path("../..", __dir__)
     TIMES_NEW_ROMAN_ENV_VARS = {
       regular: "JPMD_TIMES_NEW_ROMAN_REGULAR",
       bold: "JPMD_TIMES_NEW_ROMAN_BOLD",
@@ -48,6 +47,7 @@ module JPMD
 
       @settings = resolved.fetch("settings")
       @derived = resolved.fetch("derived")
+      @project_root = resolved.fetch("project_root")
 
       FileUtils.mkdir_p(File.dirname(@output_path))
       FileUtils.mkdir_p(File.dirname(@emit_tex_path)) if @emit_tex_path
@@ -80,7 +80,7 @@ module JPMD
     end
 
     def render_template
-      source = File.read(File.join(APP_ROOT, "template.tex"), mode: "r:utf-8")
+      source = File.read(JPMD::TEMPLATE_PATH, mode: "r:utf-8")
       class_options = [
         "lualatex",
         "paper=a4",
@@ -96,13 +96,13 @@ module JPMD
         "\\documentclass[#{class_options}]{jlreq}"
       )
 
-      raise JPMD::CommandError, "Could not find jlreq documentclass line in template.tex" if rendered == source
+      raise JPMD::CommandError, "Could not find jlreq documentclass line in #{JPMD::TEMPLATE_PATH}" if rendered == source
 
       rendered
     end
 
     def render_preamble
-      template = File.read(File.join(APP_ROOT, "templates", "preamble.tex.erb"), mode: "r:utf-8")
+      template = File.read(JPMD::PREAMBLE_TEMPLATE_PATH, mode: "r:utf-8")
       layout = @settings.fetch("layout")
       kanbun = @settings.fetch("kanbun")
       font_setup = resolve_font_setup
@@ -241,7 +241,7 @@ module JPMD
     def font_dir_candidates
       @font_dir_candidates ||= begin
         [
-          File.join(APP_ROOT, "vendor", "fonts"),
+          File.join(JPMD::APP_ROOT, "vendor", "fonts"),
           ENV["JPMD_WINDOWS_FONT_DIR"],
           "/mnt/c/Windows/Fonts",
           File.expand_path("~/AppData/Local/Microsoft/Windows/Fonts"),
@@ -296,14 +296,15 @@ module JPMD
         "-f", "markdown+bracketed_spans",
         "--standalone",
         "--citeproc",
+        "--resource-path", pandoc_resource_path,
         "--template", template_path,
         "--metadata-file", metadata_path,
-        "--lua-filter", File.join(APP_ROOT, "filter.lua"),
+        "--lua-filter", JPMD::FILTER_PATH,
         "-t", "latex",
         "-o", tex_path
       ]
 
-      execute(command, chdir: APP_ROOT, failure_label: "Pandoc")
+      execute(command, chdir: pandoc_workdir, failure_label: "Pandoc")
     end
 
     def run_lualatex(tex_path, workdir)
@@ -378,6 +379,18 @@ module JPMD
 
     def windows?
       RbConfig::CONFIG["host_os"].match?(/mswin|mingw|cygwin/i)
+    end
+
+    def pandoc_workdir
+      @project_root || File.dirname(@input_path)
+    end
+
+    def pandoc_resource_path
+      [
+        File.dirname(@input_path),
+        @project_root,
+        JPMD::APP_ROOT
+      ].compact.uniq.join(File::PATH_SEPARATOR)
     end
   end
 end

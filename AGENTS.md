@@ -16,6 +16,7 @@ entrypoints:
 examples:
   full_document: examples/academic-paper.md
   kanbun_only: examples/minimal-kanbun.md
+  bibliography_samples: examples/references
   linux_script: examples/scripts/build-linux.sh
   windows_script: examples/scripts/build-windows.ps1
 
@@ -74,8 +75,11 @@ verification:
 operating_notes:
   - run commands from repo root
   - out/ is generated and gitignored
-  - project defaults are in jpmd.yml
+  - bundled project defaults are in config/jpmd.yml
+  - cli config lookup is ./jpmd.yml, then ./config/jpmd.yml, then bundled config/jpmd.yml
   - document overrides are read from jpmd: YAML frontmatter
+  - default academic-paper bibliography samples live in examples/references and its default CSL file lives in config/csl
+  - older project-specific bibliography and CSL assets are kept under the matching custom/ folders with notes
   - kanbun syntax is [BASE]{f=\"...\" o=\"...\" k=\"...\"}
   - visual suite cases are defined in test/variation_suite.yml
 

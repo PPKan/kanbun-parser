@@ -28,18 +28,39 @@ The project builds Markdown to PDF with:
 - `Pandoc`
 - `LuaLaTeX`
 - `jlreq`
-- `filter.lua`
-- `template.tex`
-- `templates/preamble.tex.erb`
-- `jpmd.yml`
+- `config/pandoc/filter.lua`
+- `config/tex/template.tex`
+- `config/tex/preamble.tex.erb`
+- `config/jpmd.yml`
 
 ## Configuration Order
 
 Settings are applied in this order:
 
 1. built-in preset: `academic`
-2. project config: `jpmd.yml`
+2. project config: the file selected by `--config`, or the default config lookup
 3. document frontmatter override: `jpmd:`
+
+## Config File Lookup
+
+If you do not pass `--config`, the CLI looks for a config file in this order:
+
+1. `./jpmd.yml`
+2. `./config/jpmd.yml`
+3. bundled `config/jpmd.yml`
+
+This keeps the repository defaults under `config/` while still allowing a project-local override at the top level.
+
+## Bundled Configuration Folder
+
+The repository keeps its editable build assets together under `config/`:
+
+- `config/jpmd.yml`: default project settings and preset overrides
+- `config/tex/template.tex`: base jlreq document shell
+- `config/tex/preamble.tex.erb`: font setup, spacing, and kanbun macros
+- `config/pandoc/filter.lua`: bracketed-span to kanbun TeX conversion
+- `config/csl/chicago-notes-bibliography.csl`: default Zotero CSL used by the academic example
+- `config/csl/custom/`: project-specific CSL variants kept for reference
 
 You can also choose a preset explicitly:
 
@@ -73,7 +94,7 @@ jpmd:
 
 ## Temporary Project Override File
 
-If you do not want to edit `jpmd.yml`, create a second config file and pass `--config`.
+If you do not want to edit the bundled `config/jpmd.yml`, create a second config file and pass `--config`.
 
 ```yaml
 default_preset: academic
@@ -89,8 +110,32 @@ presets:
 ```
 
 ```bash
-ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper-test.pdf --emit-tex out/academic-paper-test.tex --config jpmd.test.yml
+ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper-test.pdf --emit-tex out/academic-paper-test.tex --config config/jpmd.test.yml
 ```
+
+## Bibliography And CSL Inputs
+
+The academic sample uses:
+
+- `examples/references/zotero-export.json`
+- `examples/references/zotero-export.bib`
+- `config/csl/chicago-notes-bibliography.csl`
+- `examples/references/custom/` and `config/csl/custom/` for older project-specific assets
+
+Edit the document frontmatter when you want to point to your own bibliography:
+
+```yaml
+---
+bibliography: path/to/your-library.bib
+# or:
+# bibliography: path/to/your-library.json
+csl: ../config/csl/chicago-notes-bibliography.csl
+jpmd:
+  preset: academic
+---
+```
+
+Pandoc resolves `bibliography:` and `csl:` relative to the Markdown file that declares them. In `examples/academic-paper.md`, that means `references/...` and `../config/...`.
 
 ## Adjustable Parameters
 
@@ -208,7 +253,12 @@ The suite covers:
 
 - `examples/academic-paper.md`
 - `examples/minimal-kanbun.md`
-- `jpmd.yml`
-- `templates/preamble.tex.erb`
+- `examples/references/zotero-export.bib`
+- `examples/references/zotero-export.json`
+- `config/jpmd.yml`
+- `config/tex/template.tex`
+- `config/tex/preamble.tex.erb`
+- `config/pandoc/filter.lua`
+- `config/csl/chicago-notes-bibliography.csl`
 - `test/variation_suite.yml`
 - `scripts/run_visual_suite.rb`
