@@ -16,15 +16,18 @@ It is meant for two common workflows:
 ## What The Repo Contains
 
 - `bin/jpmd` and `bin/jpmd.cmd`: CLI entrypoints for Linux and Windows
+- `bin/jpmd serve`: local Sinatra web app for interactive builds
 - `jpmd.yml`: project-wide layout defaults
 - `examples/academic-paper.md`: full sample paper
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
+- `references/`: bundled Zotero JSON, BibTeX, and CSL samples for citation testing
 - `examples/scripts/`: sample build scripts for Linux and Windows
 - `filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
 - `templates/preamble.tex.erb`: layout and kanbun TeX template
 - `scripts/run_visual_suite.rb`: generates `out/variation-suite/report.html`
 - `docs/dependencies.md`: dependency matrix
 - `docs/compile-and-adjust.md`: parameter and tuning guide
+- `docs/webapp-local-builder.md`: local web app behavior and upload notes
 - `docs/images/readme-final-result.png`: tracked sample render used in this README
 - `AGENTS.md`: machine-oriented bootstrap document for AI agents
 
@@ -109,6 +112,46 @@ You can also run the sample Linux script:
 ```bash
 bash examples/scripts/build-linux.sh
 ```
+
+## Local Web App
+
+Install the Ruby web dependencies first:
+
+```bash
+bundle install
+```
+
+Then start the browser-based builder:
+
+```bash
+bundle exec ruby bin/jpmd serve --host 127.0.0.1 --port 4567
+```
+
+Open:
+
+```text
+http://127.0.0.1:4567
+```
+
+The web app can:
+
+- build a bundled Markdown sample immediately
+- accept pasted Markdown or an uploaded Markdown file
+- expose the same layout and kanbun controls as `jpmd.yml`
+- switch between bundled citation samples, uploaded Zotero/BibTeX files, uploaded CSL files, or the Markdown's own `bibliography:` and `csl:` metadata
+
+Bundled samples available in the app:
+
+- `examples/academic-paper.md`
+- `examples/minimal-kanbun.md`
+- `test/fixtures/kanbun-visual.md`
+- `references/zotero-export.json`
+- `references/zotero-export.bib`
+- `references/chicago-notes-bibliography.csl`
+
+Reference-only custom citation samples are also kept in:
+
+- `references/custom/`
 
 ## Windows Setup
 
@@ -196,7 +239,7 @@ The preview below comes from the academic paper sample rendered with the current
 ## Notes
 
 - `out/` is intentionally ignored and should be treated as generated workspace output.
-- The main supported CLI command is `build`.
+- The main supported CLI commands are `build` and `serve`.
 - Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 

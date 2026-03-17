@@ -12,10 +12,17 @@
         <div class="section-head">
           <div>
             <h2>Source</h2>
-            <p class="helper">Choose exactly one input mode for each build request.</p>
+            <p class="helper">Start from a bundled sample, paste Markdown directly, or upload a Markdown file.</p>
           </div>
         </div>
         <div class="mode-grid">
+          <label class="mode-tile">
+            <input type="radio" name="source_mode" value="sample" <%= "checked" if source_mode?("sample") %>>
+            <div class="mode-copy">
+              <strong>Bundled Sample</strong>
+              <span>Use a repo sample and build immediately without preparing any files.</span>
+            </div>
+          </label>
           <label class="mode-tile">
             <input type="radio" name="source_mode" value="paste" <%= "checked" if source_mode?("paste") %>>
             <div class="mode-copy">
@@ -32,14 +39,31 @@
           </label>
         </div>
 
-        <div class="source-pane" data-source-pane="paste">
+        <div class="source-pane" data-pane-group="source" data-pane-value="sample">
+          <label>
+            Bundled Sample Document
+            <select name="source_sample">
+              <% source_samples.each do |key, sample| %>
+                <option value="<%= h(key) %>" <%= "selected" if state_value("source_sample") == key %>><%= h(sample.fetch("label")) %></option>
+              <% end %>
+            </select>
+          </label>
+          <div class="selection-meta">
+            <strong><%= h(selected_source_sample.fetch("label")) %></strong>
+            <span class="note"><%= h(selected_source_sample.fetch("description")) %></span>
+            <code><%= h(selected_source_sample.fetch("path")) %></code>
+          </div>
+        </div>
+
+        <div class="source-pane" data-pane-group="source" data-pane-value="paste">
           <label>
             Markdown Text
             <textarea name="markdown_text" spellcheck="false"><%= h(state_value("markdown_text")) %></textarea>
           </label>
+          <p class="mini">Use the citation section below if you want bundled or uploaded bibliography files without editing frontmatter by hand.</p>
         </div>
 
-        <div class="source-pane" data-source-pane="upload">
+        <div class="source-pane" data-pane-group="source" data-pane-value="upload">
           <label>
             Markdown File
             <input type="file" name="markdown_file" accept=".md,.markdown,text/markdown,text/plain">
@@ -51,6 +75,139 @@
               Last selected file: <strong><%= h(state_value("upload_filename")) %></strong>
             <% end %>
           </p>
+        </div>
+      </section>
+
+      <section class="stack">
+        <div class="section-head">
+          <div>
+            <h2>Citation Assets</h2>
+            <p class="helper">Choose bundled citation samples, upload your own Zotero/BibTeX or CSL files, or keep whatever the Markdown already declares.</p>
+          </div>
+        </div>
+
+        <div class="asset-grid">
+          <section class="asset-group">
+            <h3>Bibliography</h3>
+            <div class="mode-grid asset-modes">
+              <label class="mode-tile">
+                <input type="radio" name="bibliography_mode" value="sample" <%= "checked" if bibliography_mode?("sample") %>>
+                <div class="mode-copy">
+                  <strong>Bundled Sample</strong>
+                  <span>Default general Zotero JSON/BibTeX samples are ready to use.</span>
+                </div>
+              </label>
+              <label class="mode-tile">
+                <input type="radio" name="bibliography_mode" value="upload" <%= "checked" if bibliography_mode?("upload") %>>
+                <div class="mode-copy">
+                  <strong>Upload Bibliography</strong>
+                  <span>Accepts <code>.json</code> or <code>.bib</code>.</span>
+                </div>
+              </label>
+              <label class="mode-tile">
+                <input type="radio" name="bibliography_mode" value="keep" <%= "checked" if bibliography_mode?("keep") %>>
+                <div class="mode-copy">
+                  <strong>Keep Markdown Setting</strong>
+                  <span>Use the bibliography path already written in the Markdown itself.</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="source-pane" data-pane-group="bibliography" data-pane-value="sample">
+              <label>
+                Bundled Bibliography Sample
+                <select name="bibliography_sample">
+                  <% bibliography_samples.each do |key, sample| %>
+                    <option value="<%= h(key) %>" <%= "selected" if state_value("bibliography_sample") == key %>><%= h(sample.fetch("label")) %></option>
+                  <% end %>
+                </select>
+              </label>
+              <div class="selection-meta">
+                <strong><%= h(selected_bibliography_sample.fetch("label")) %></strong>
+                <span class="note"><%= h(selected_bibliography_sample.fetch("note")) %></span>
+                <code><%= h(selected_bibliography_sample.fetch("workspace_path")) %></code>
+              </div>
+            </div>
+
+            <div class="source-pane" data-pane-group="bibliography" data-pane-value="upload">
+              <label>
+                Bibliography File
+                <input type="file" name="bibliography_file" accept=".json,.bib,application/json,text/plain,text/x-bibtex,application/x-bibtex">
+              </label>
+              <p class="mini">
+                <% if state_value("bibliography_upload_filename").to_s.empty? %>
+                  No bibliography file selected yet.
+                <% else %>
+                  Last selected bibliography: <strong><%= h(state_value("bibliography_upload_filename")) %></strong>
+                <% end %>
+              </p>
+            </div>
+
+            <div class="source-pane" data-pane-group="bibliography" data-pane-value="keep">
+              <p class="mini">No web override will be applied. The Markdown’s own <code>bibliography:</code> metadata stays in control.</p>
+            </div>
+          </section>
+
+          <section class="asset-group">
+            <h3>CSL Style</h3>
+            <div class="mode-grid asset-modes">
+              <label class="mode-tile">
+                <input type="radio" name="csl_mode" value="sample" <%= "checked" if csl_mode?("sample") %>>
+                <div class="mode-copy">
+                  <strong>Bundled Sample</strong>
+                  <span>Start with the general bundled CSL, or compare it with the older custom style.</span>
+                </div>
+              </label>
+              <label class="mode-tile">
+                <input type="radio" name="csl_mode" value="upload" <%= "checked" if csl_mode?("upload") %>>
+                <div class="mode-copy">
+                  <strong>Upload CSL</strong>
+                  <span>Accepts a local <code>.csl</code> file.</span>
+                </div>
+              </label>
+              <label class="mode-tile">
+                <input type="radio" name="csl_mode" value="keep" <%= "checked" if csl_mode?("keep") %>>
+                <div class="mode-copy">
+                  <strong>Keep Markdown Setting</strong>
+                  <span>Use the <code>csl:</code> path already written in the Markdown.</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="source-pane" data-pane-group="csl" data-pane-value="sample">
+              <label>
+                Bundled CSL Sample
+                <select name="csl_sample">
+                  <% csl_samples.each do |key, sample| %>
+                    <option value="<%= h(key) %>" <%= "selected" if state_value("csl_sample") == key %>><%= h(sample.fetch("label")) %></option>
+                  <% end %>
+                </select>
+              </label>
+              <div class="selection-meta">
+                <strong><%= h(selected_csl_sample.fetch("label")) %></strong>
+                <span class="note"><%= h(selected_csl_sample.fetch("note")) %></span>
+                <code><%= h(selected_csl_sample.fetch("workspace_path")) %></code>
+              </div>
+            </div>
+
+            <div class="source-pane" data-pane-group="csl" data-pane-value="upload">
+              <label>
+                CSL File
+                <input type="file" name="csl_file" accept=".csl,text/plain,text/xml,application/xml">
+              </label>
+              <p class="mini">
+                <% if state_value("csl_upload_filename").to_s.empty? %>
+                  No CSL file selected yet.
+                <% else %>
+                  Last selected CSL: <strong><%= h(state_value("csl_upload_filename")) %></strong>
+                <% end %>
+              </p>
+            </div>
+
+            <div class="source-pane" data-pane-group="csl" data-pane-value="keep">
+              <p class="mini">No web override will be applied. The Markdown’s own <code>csl:</code> metadata stays in control.</p>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -142,7 +299,7 @@
 
       <div class="build-bar">
         <button type="submit">Build PDF</button>
-        <div class="mini">Browser precedence is: built-in preset → repo <code>jpmd.yml</code> → Markdown frontmatter → web form values.</div>
+        <div class="mini">Build precedence is: built-in preset → repo <code>jpmd.yml</code> → Markdown frontmatter → web form overrides. Bundled or uploaded citation assets override Markdown only when selected above.</div>
       </div>
     </form>
   </main>
@@ -150,21 +307,52 @@
   <aside class="sidebar card">
     <section class="spec-list">
       <div class="spec">
-        <strong>Paste or upload</strong>
-        <span class="note">The form accepts pasted Markdown or a single uploaded Markdown file. v1 does not merge both sources in one request.</span>
+        <strong>First-run friendly</strong>
+        <span class="note">The default page opens on the bundled academic sample with a general Zotero JSON file and a general CSL already selected.</span>
       </div>
       <div class="spec">
-        <strong>Citations stay local</strong>
-        <span class="note">Each request gets a temp workspace and a copied <code>references/</code> directory so the bundled citation sample still resolves.</span>
+        <strong>Custom uploads stay local</strong>
+        <span class="note">Uploaded Markdown, bibliography, and CSL files are written into a temp workspace for that one request only.</span>
       </div>
       <div class="spec">
-        <strong>No persistence</strong>
-        <span class="note">There is no history, no accounts, and no queued jobs. Each build is synchronous and returns the PDF immediately.</span>
+        <strong>Bundled references still resolve</strong>
+        <span class="note">The app copies the repo’s <code>references/</code> directory into each build workspace so the bundled sample documents keep working.</span>
+      </div>
+      <div class="spec">
+        <strong>Custom citation pack included</strong>
+        <span class="note">The older Japanese-focused Zotero and CSL samples remain available under the bundled sample selectors, but they are no longer the default testing path.</span>
       </div>
     </section>
+
     <section class="stack">
-      <h2>Suggested Inputs</h2>
-      <p class="helper">For a quick check, paste the repo’s <code>document.md</code> or upload <code>test/fixtures/kanbun-visual.md</code> to verify the kanbun path through the browser flow.</p>
+      <h2>Bundled Sample Documents</h2>
+      <div class="sample-list">
+        <% source_samples.each do |key, sample| %>
+          <article class="sample-card <%= "is-selected" if state_value("source_sample") == key %>">
+            <strong><%= h(sample.fetch("label")) %></strong>
+            <span class="note"><%= h(sample.fetch("description")) %></span>
+            <code><%= h(sample.fetch("path")) %></code>
+          </article>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="stack">
+      <h2>Bundled Citation Packs</h2>
+      <div class="sample-list">
+        <article class="sample-card">
+          <strong>Default General Pack</strong>
+          <span class="note">Uses the bundled general Zotero export and Chicago notes bibliography CSL.</span>
+          <code>references/zotero-export.json</code>
+          <code>references/chicago-notes-bibliography.csl</code>
+        </article>
+        <article class="sample-card">
+          <strong>Reference-Only Custom Pack</strong>
+          <span class="note">Keeps the earlier Japanese-focused Zotero and CSL samples available for comparison.</span>
+          <code>references/custom/japanese-note-sample.json</code>
+          <code>references/custom/word-japanese-note.csl</code>
+        </article>
+      </div>
     </section>
   </aside>
 </div>

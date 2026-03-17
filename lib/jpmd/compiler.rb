@@ -29,7 +29,7 @@ module JPMD
     MS_MINCHO_ENV_VAR = "JPMD_MS_MINCHO"
     MS_MINCHO_FILENAME = "msmincho.ttc"
 
-    def initialize(input_path:, output_path:, config_path:, preset_name:, emit_tex_path:, working_dir: nil, asset_root: APP_ROOT, runtime_overrides: nil)
+    def initialize(input_path:, output_path:, config_path:, preset_name:, emit_tex_path:, working_dir: nil, asset_root: APP_ROOT, runtime_overrides: nil, pandoc_metadata_overrides: nil)
       @input_path = File.expand_path(input_path)
       @output_path = File.expand_path(output_path)
       @config_path = File.expand_path(config_path)
@@ -38,6 +38,7 @@ module JPMD
       @working_dir = working_dir && File.expand_path(working_dir)
       @asset_root = File.expand_path(asset_root)
       @runtime_overrides = runtime_overrides || {}
+      @pandoc_metadata_overrides = normalize_metadata_overrides(pandoc_metadata_overrides || {})
     end
 
     def build
@@ -291,6 +292,7 @@ module JPMD
         ]
       }
 
+      metadata.merge!(@pandoc_metadata_overrides)
       YAML.dump(metadata)
     end
 
@@ -375,6 +377,14 @@ module JPMD
 
     def format_pt(value)
       format("%.5fpt", value)
+    end
+
+    def normalize_metadata_overrides(overrides)
+      overrides.each_with_object({}) do |(key, value), hash|
+        next if value.nil?
+
+        hash[key.to_s] = value
+      end
     end
 
     def tex_dimension(value)

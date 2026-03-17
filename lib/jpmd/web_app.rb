@@ -18,6 +18,30 @@ module JPMD
         Rack::Utils.escape_html(text)
       end
 
+      def source_samples
+        JPMD::WebForm.source_samples
+      end
+
+      def bibliography_samples
+        JPMD::WebForm.bibliography_samples
+      end
+
+      def csl_samples
+        JPMD::WebForm.csl_samples
+      end
+
+      def selected_source_sample
+        JPMD::WebForm.selected_source_sample(state_value("source_sample"))
+      end
+
+      def selected_bibliography_sample
+        JPMD::WebForm.selected_bibliography_sample(state_value("bibliography_sample"))
+      end
+
+      def selected_csl_sample
+        JPMD::WebForm.selected_csl_sample(state_value("csl_sample"))
+      end
+
       def state_value(*keys)
         keys.reduce(@state) do |memo, key|
           break nil unless memo.is_a?(Hash)
@@ -28,6 +52,14 @@ module JPMD
 
       def source_mode?(value)
         state_value("source_mode") == value
+      end
+
+      def bibliography_mode?(value)
+        state_value("bibliography_mode") == value
+      end
+
+      def csl_mode?(value)
+        state_value("csl_mode") == value
       end
 
       def advanced_open?
@@ -53,12 +85,16 @@ module JPMD
 
     post "/build" do
       @state = JPMD::WebForm.state_from_params(repo_root: settings.repo_root, params: params)
-      source = JPMD::WebForm.extract_source!(params)
+      source = JPMD::WebForm.extract_source!(repo_root: settings.repo_root, params: params)
+      bibliography = JPMD::WebForm.resolve_bibliography!(params: params)
+      csl = JPMD::WebForm.resolve_csl!(params: params)
       overrides = JPMD::WebForm.sanitize_overrides(@state.fetch("overrides"))
       result = current_build_runner.call(
         source_text: source.fetch("content"),
         source_name: source.fetch("filename"),
-        overrides: overrides
+        overrides: overrides,
+        bibliography: bibliography,
+        csl: csl
       )
 
       content_type "application/pdf"

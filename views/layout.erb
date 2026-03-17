@@ -146,6 +146,25 @@
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
 
+      .asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .asset-group {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.46);
+      }
+
+      .asset-modes {
+        grid-template-columns: 1fr;
+      }
+
       .mode-tile {
         position: relative;
         display: grid;
@@ -180,6 +199,7 @@
       input[type="text"],
       input[type="number"],
       input[type="file"],
+      select,
       textarea {
         width: 100%;
         border: 1px solid rgba(29, 26, 22, 0.18);
@@ -209,6 +229,15 @@
 
       .source-pane[hidden] {
         display: none;
+      }
+
+      .selection-meta {
+        display: grid;
+        gap: 4px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.46);
       }
 
       .section-head {
@@ -290,6 +319,25 @@
         margin-bottom: 4px;
       }
 
+      .sample-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .sample-card {
+        display: grid;
+        gap: 6px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.52);
+      }
+
+      .sample-card.is-selected {
+        border-color: rgba(157, 59, 31, 0.34);
+        box-shadow: inset 0 0 0 1px rgba(157, 59, 31, 0.12);
+      }
+
       @media (max-width: 960px) {
         .layout {
           grid-template-columns: 1fr;
@@ -307,29 +355,36 @@
       <header class="masthead">
         <div class="eyebrow">Local PDF Builder</div>
         <h1>Paste Markdown. Tune the grid. Download the PDF.</h1>
-        <p class="lede">This branch wraps the existing Ruby compiler in a local-only Sinatra app. It keeps the current citation setup, exposes the common page controls first, and leaves the full kanbun geometry under an advanced section.</p>
+        <p class="lede">This local Sinatra app now starts from bundled sample documents, lets you swap bundled or uploaded Zotero and CSL assets, and keeps the full page plus kanbun geometry controls in one browser flow.</p>
       </header>
       <%= yield %>
     </div>
     <script>
       (function () {
-        function updateSourceMode() {
-          var selected = document.querySelector('input[name="source_mode"]:checked');
-          var mode = selected ? selected.value : 'paste';
-          document.querySelectorAll('[data-source-pane]').forEach(function (pane) {
-            var active = pane.getAttribute('data-source-pane') === mode;
+        function updateModeGroup(group, defaultValue) {
+          var selected = document.querySelector('input[name="' + group + '_mode"]:checked');
+          var mode = selected ? selected.value : defaultValue;
+
+          document.querySelectorAll('[data-pane-group="' + group + '"]').forEach(function (pane) {
+            var active = pane.getAttribute('data-pane-value') === mode;
             pane.hidden = !active;
-            pane.querySelectorAll('textarea, input[type="file"]').forEach(function (field) {
+            pane.querySelectorAll('textarea, input[type="file"], select').forEach(function (field) {
               field.disabled = !active;
             });
           });
         }
 
-        document.querySelectorAll('input[name="source_mode"]').forEach(function (input) {
-          input.addEventListener('change', updateSourceMode);
+        ['source', 'bibliography', 'csl'].forEach(function (group) {
+          document.querySelectorAll('input[name="' + group + '_mode"]').forEach(function (input) {
+            input.addEventListener('change', function () {
+              updateModeGroup(group, group === 'source' ? 'sample' : 'sample');
+            });
+          });
         });
 
-        updateSourceMode();
+        updateModeGroup('source', 'sample');
+        updateModeGroup('bibliography', 'sample');
+        updateModeGroup('csl', 'sample');
       }());
     </script>
   </body>
