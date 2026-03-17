@@ -1,6 +1,6 @@
 # Kanbun Parser
 
-Languages: English | [日本語](README.ja.md) | [繁體中文](README.zh-Hant-TW.md)
+Languages: English | [日本語](README.ja.md) | [繁體中文（台灣）](README.zh-Hant-TW.md)
 
 Kanbun Parser is a Ruby CLI that turns Markdown into PDF through Pandoc and LuaLaTeX, with custom support for kanbun annotation layers:
 
@@ -25,6 +25,7 @@ It is meant for two common workflows:
 - `scripts/run_visual_suite.rb`: generates `out/variation-suite/report.html`
 - `docs/dependencies.md`: dependency matrix
 - `docs/compile-and-adjust.md`: parameter and tuning guide
+- `docs/images/readme-final-result.png`: tracked sample render used in this README
 - `AGENTS.md`: machine-oriented bootstrap document for AI agents
 
 ## Choose A Starting Example
@@ -34,7 +35,7 @@ If you already have a complete Markdown document, start from `examples/academic-
 If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. That file is intentionally small and focuses only on the kanbun syntax:
 
 ```markdown
-[世]{o="ニ"}[有]{o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}。
+[世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
 ## Linux Setup
@@ -185,6 +186,12 @@ Windows sample script:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\examples\scripts\run-visual-suite-windows.ps1
 ```
+
+## Rendered Output
+
+The preview below comes from the academic paper sample rendered with the current CLI setup.
+
+![Rendered output demo](docs/images/readme-final-result.png)
 
 ## Notes
 

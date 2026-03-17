@@ -1,6 +1,30 @@
+# Generated build output
 /out/
 /tmp/
+
+# LaTeX intermediates
 *.aux
 *.log
 *.ltjruby
 input.ltjruby
+document.tex
+
+# Local preview/debug images
+document-page1.png
+kanbun-close.png
+kanbun-crop.png
+kanbun-line-2.png
+kanbun-line-3-fixed.png
+kanbun-line-3-fixed2.png
+kanbun-line-3-fixed3.png
+kanbun-line-3-fixed4.png
+kanbun-line-3-fixed5.png
+kanbun-line-3-fixed6.png
+kanbun-line-3.png
+kanbun-line.png
+kanbun-ultra.png
+citation-*.png
+line-test-page4.png
+page1-preview.png
+quote-block-*.png
+width-test-page6.png
