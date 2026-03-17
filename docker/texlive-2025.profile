@@ -1,0 +1,17 @@
+selected_scheme scheme-small
+TEXDIR /opt/texlive/2025
+TEXMFCONFIG /opt/texlive/2025/texmf-config
+TEXMFHOME /opt/texlive/2025/texmf-home
+TEXMFLOCAL /opt/texlive/texmf-local
+TEXMFSYSCONFIG /opt/texlive/2025/texmf-config
+TEXMFSYSVAR /opt/texlive/2025/texmf-var
+TEXMFVAR /opt/texlive/2025/texmf-var-user
+binary_x86_64-linux 1
+collection-basic 1
+collection-latex 1
+collection-latexrecommended 1
+instopt_adjustpath 0
+instopt_portable 0
+instopt_write18_restricted 1
+tlpdbopt_install_docfiles 0
+tlpdbopt_install_srcfiles 0

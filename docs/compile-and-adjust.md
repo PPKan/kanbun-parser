@@ -9,11 +9,11 @@ The current CLI builds Markdown to PDF with:
 - `Pandoc`
 - `LuaLaTeX`
 - `jlreq`
-- the custom kanbun Lua filter in [filter.lua](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/filter.lua)
-- the generated preamble in [templates/preamble.tex.erb](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/templates/preamble.tex.erb)
-- the project defaults in [jpmd.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/jpmd.yml)
+- the custom kanbun Lua filter in `filter.lua`
+- the generated preamble in `templates/preamble.tex.erb`
+- the project defaults in `jpmd.yml`
 
-The main entrypoint is [bin/jpmd](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/bin/jpmd).
+The main entrypoint is `bin/jpmd`.
 
 ## 2. Requirements
 
@@ -23,36 +23,55 @@ You need:
 - Pandoc
 - LuaLaTeX
 - the TeX packages already used by this repo, especially `jlreq` and `luatexja-ruby`
+- the exact document fonts:
+  - `Times New Roman`
+  - `MS Mincho`
 
 The compiler looks for:
 
 - `pandoc` on `PATH`, or `PANDOC_PATH`
 - `lualatex` on `PATH`, or `LUALATEX_PATH`
+- the repo-local `vendor/fonts` directory, if present
+- `Times New Roman` and `MS Mincho` through the system font database, or exact font files via:
+  - `JPMD_WINDOWS_FONT_DIR`
+  - `JPMD_TIMES_NEW_ROMAN_REGULAR`
+  - `JPMD_TIMES_NEW_ROMAN_BOLD`
+  - `JPMD_TIMES_NEW_ROMAN_ITALIC`
+  - `JPMD_TIMES_NEW_ROMAN_BOLD_ITALIC`
+  - `JPMD_MS_MINCHO`
 
-On this machine the usual locations are:
+Example Linux setup when running inside WSL or another Linux environment that can see a Windows font directory:
 
-```powershell
-$env:PANDOC_PATH = 'C:\Users\peter\AppData\Local\Pandoc\pandoc.exe'
-$env:LUALATEX_PATH = 'C:\texlive\2025\bin\windows\lualatex.exe'
+```bash
+export JPMD_WINDOWS_FONT_DIR=/mnt/c/Windows/Fonts
+```
+
+If `vendor/fonts` contains `times.ttf`, `timesbd.ttf`, `timesi.ttf`, `timesbi.ttf`, and `msmincho.ttc`, the compiler will pick them up automatically.
+
+Example explicit tool paths:
+
+```bash
+export PANDOC_PATH=/usr/bin/pandoc
+export LUALATEX_PATH=/usr/bin/lualatex
 ```
 
 ## 3. Basic compile command
 
 From the project root:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document.pdf --emit-tex out\document.tex
+```bash
+ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
 ```
 
 This writes:
 
-- the PDF to `out\document.pdf`
-- the generated TeX to `out\document.tex`
+- the PDF to `out/document.pdf`
+- the generated TeX to `out/document.tex`
 
 If you only want the PDF:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document.pdf
+```bash
+ruby bin/jpmd build document.md -o out/document.pdf
 ```
 
 ## 4. How settings are resolved
@@ -60,18 +79,18 @@ ruby bin\jpmd build document.md -o out\document.pdf
 Settings are applied in this order:
 
 1. Built-in preset: `academic`
-2. Project config: [jpmd.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/jpmd.yml)
+2. Project config: `jpmd.yml`
 3. Per-document frontmatter override: `jpmd:`
 
 You can also choose a preset explicitly:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document.pdf --preset academic
+```bash
+ruby bin/jpmd build document.md -o out/document.pdf --preset academic
 ```
 
 ## 5. Project-wide parameter editing
 
-Edit [jpmd.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/jpmd.yml) when you want the change to affect all builds that use the project default.
+Edit `jpmd.yml` when you want the change to affect all builds that use the project default.
 
 Current default structure:
 
@@ -149,7 +168,7 @@ That override affects only that Markdown file.
 
 ## 7. Temporary test config without touching the main config
 
-If you want to experiment without changing [jpmd.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/jpmd.yml), create a separate YAML file and pass it with `--config`.
+If you want to experiment without changing `jpmd.yml`, create a separate YAML file and pass it with `--config`.
 
 Example `jpmd.test.yml`:
 
@@ -176,8 +195,8 @@ presets:
 
 Compile with it:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document-test.pdf --emit-tex out\document-test.tex --config jpmd.test.yml
+```bash
+ruby bin/jpmd build document.md -o out/document-test.pdf --emit-tex out/document-test.tex --config jpmd.test.yml
 ```
 
 ## 8. Adjustable parameters
@@ -325,8 +344,8 @@ When you want to tune one thing at a time:
 
 Fast loop:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document.pdf --emit-tex out\document.tex
+```bash
+ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
 ```
 
 ## 13. Visual regression report
@@ -335,13 +354,13 @@ There is also a visual suite that renders multiple variations and converts the r
 
 Run it with:
 
-```powershell
-ruby scripts\run_visual_suite.rb
+```bash
+ruby scripts/run_visual_suite.rb
 ```
 
 Open the generated report:
 
-- [out/variation-suite/report.html](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/out/variation-suite/report.html)
+- `out/variation-suite/report.html`
 
 This report includes:
 
@@ -373,29 +392,29 @@ If you want a safe place to start, try these one at a time:
 
 Default build:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document.pdf --emit-tex out\document.tex
+```bash
+ruby bin/jpmd build document.md -o out/document.pdf --emit-tex out/document.tex
 ```
 
 Build with alternate config:
 
-```powershell
-ruby bin\jpmd build document.md -o out\document-test.pdf --emit-tex out\document-test.tex --config jpmd.test.yml
+```bash
+ruby bin/jpmd build document.md -o out/document-test.pdf --emit-tex out/document-test.tex --config jpmd.test.yml
 ```
 
 Show CLI help:
 
-```powershell
-ruby bin\jpmd --help
+```bash
+ruby bin/jpmd --help
 ```
 
 ## 16. Files worth editing
 
-- Main content: [document.md](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/document.md)
-- Project defaults: [jpmd.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/jpmd.yml)
-- Kanbun TeX template: [templates/preamble.tex.erb](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/templates/preamble.tex.erb)
-- Visual suite cases: [test/variation_suite.yml](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/test/variation_suite.yml)
-- Visual suite runner: [scripts/run_visual_suite.rb](C:/Users/peter/Desktop/apps/parser/v2-gemini-partial/scripts/run_visual_suite.rb)
+- Main content: `document.md`
+- Project defaults: `jpmd.yml`
+- Kanbun TeX template: `templates/preamble.tex.erb`
+- Visual suite cases: `test/variation_suite.yml`
+- Visual suite runner: `scripts/run_visual_suite.rb`
 
 ## 17. Notes
 
