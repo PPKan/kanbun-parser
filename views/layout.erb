@@ -240,6 +240,26 @@
         background: rgba(255, 255, 255, 0.46);
       }
 
+      .sample-preview {
+        display: grid;
+        gap: 10px;
+      }
+
+      .sample-preview[hidden] {
+        display: none;
+      }
+
+      .preview-head {
+        display: grid;
+        gap: 4px;
+      }
+
+      .sample-preview-text {
+        min-height: 260px;
+        font-family: "Berkeley Mono", "Iosevka Term", "SFMono-Regular", Consolas, monospace;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
       .section-head {
         display: flex;
         justify-content: space-between;
@@ -374,6 +394,15 @@
           });
         }
 
+        function updateSamplePreview(group, defaultValue) {
+          var select = document.querySelector('select[name="' + group + '_sample"]');
+          var value = select && select.value ? select.value : defaultValue;
+
+          document.querySelectorAll('[data-preview-group="' + group + '"]').forEach(function (preview) {
+            preview.hidden = preview.getAttribute('data-preview-value') !== value;
+          });
+        }
+
         ['source', 'bibliography', 'csl'].forEach(function (group) {
           document.querySelectorAll('input[name="' + group + '_mode"]').forEach(function (input) {
             input.addEventListener('change', function () {
@@ -382,9 +411,23 @@
           });
         });
 
+        ['source', 'bibliography', 'csl'].forEach(function (group) {
+          var select = document.querySelector('select[name="' + group + '_sample"]');
+          if (!select) {
+            return;
+          }
+
+          select.addEventListener('change', function () {
+            updateSamplePreview(group, select.value);
+          });
+        });
+
         updateModeGroup('source', 'sample');
         updateModeGroup('bibliography', 'sample');
         updateModeGroup('csl', 'sample');
+        updateSamplePreview('source', 'academic-paper');
+        updateSamplePreview('bibliography', 'zotero-json');
+        updateSamplePreview('csl', 'chicago-notes');
       }());
     </script>
   </body>

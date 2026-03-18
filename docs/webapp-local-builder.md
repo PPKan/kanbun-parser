@@ -24,6 +24,7 @@ http://127.0.0.1:4567
 
 - start from a bundled sample, paste Markdown, or upload a Markdown file
 - choose bundled citation assets, upload your own Zotero/BibTeX or CSL files, or keep the Markdown frontmatter paths
+- inspect the bundled Markdown, bibliography, and CSL files directly in readonly preview panes before editing your own copies
 - adjust the visible layout controls
 - open the advanced section for kanbun-side geometry
 - click `Build PDF`

@@ -42,6 +42,16 @@ module JPMD
         JPMD::WebForm.selected_csl_sample(state_value("csl_sample"))
       end
 
+      def sample_file_content(relative_path)
+        @sample_file_contents ||= {}
+        @sample_file_contents[relative_path] ||= begin
+          path = File.join(settings.repo_root, relative_path)
+          File.read(path, mode: "r:utf-8")
+        rescue Errno::ENOENT
+          "Missing bundled sample: #{relative_path}"
+        end
+      end
+
       def state_value(*keys)
         keys.reduce(@state) do |memo, key|
           break nil unless memo.is_a?(Hash)

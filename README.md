@@ -139,6 +139,7 @@ The web app can:
 - accept pasted Markdown or an uploaded Markdown file
 - expose the same layout and kanbun controls as `jpmd.yml`
 - switch between bundled citation samples, uploaded Zotero/BibTeX files, uploaded CSL files, or the Markdown's own `bibliography:` and `csl:` metadata
+- show the bundled Markdown, bibliography, and CSL files directly in readonly preview panes so users can treat them as templates
 
 Bundled samples available in the app:
 

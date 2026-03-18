@@ -48,6 +48,9 @@ class JPMDWebAppTest < Minitest::Test
     assert_includes last_response.body, "Upload CSL"
     assert_includes last_response.body, "Page Controls"
     assert_includes last_response.body, "Advanced Kanbun Controls"
+    assert_includes last_response.body, "デジタル環境における漢文訓読資料の組版再現"
+    assert_includes last_response.body, "Reading Classical Texts in Digital Workflows"
+    assert_includes last_response.body, "Chicago Manual of Style 18th edition"
   end
 
   def test_bundled_sample_build_returns_pdf

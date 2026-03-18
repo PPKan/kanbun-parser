@@ -292,12 +292,15 @@ module JPMD
         ]
       }
 
-      metadata.merge!(@pandoc_metadata_overrides)
       YAML.dump(metadata)
     end
 
     def run_pandoc(template_path:, metadata_path:, tex_path:)
-      command = [
+      execute(pandoc_command(template_path: template_path, metadata_path: metadata_path, tex_path: tex_path), chdir: @working_dir, failure_label: "Pandoc")
+    end
+
+    def pandoc_command(template_path:, metadata_path:, tex_path:)
+      [
         resolve_pandoc,
         @input_path,
         "-f", "markdown+bracketed_spans",
@@ -305,12 +308,11 @@ module JPMD
         "--citeproc",
         "--template", template_path,
         "--metadata-file", metadata_path,
+        *pandoc_metadata_arguments,
         "--lua-filter", File.join(@asset_root, "filter.lua"),
         "-t", "latex",
         "-o", tex_path
       ]
-
-      execute(command, chdir: @working_dir, failure_label: "Pandoc")
     end
 
     def run_lualatex(tex_path, workdir)
@@ -384,6 +386,12 @@ module JPMD
         next if value.nil?
 
         hash[key.to_s] = value
+      end
+    end
+
+    def pandoc_metadata_arguments
+      @pandoc_metadata_overrides.flat_map do |key, value|
+        ["--metadata", "#{key}=#{value}"]
       end
     end
 

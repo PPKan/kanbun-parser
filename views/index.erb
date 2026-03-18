@@ -53,6 +53,16 @@
             <span class="note"><%= h(selected_source_sample.fetch("description")) %></span>
             <code><%= h(selected_source_sample.fetch("path")) %></code>
           </div>
+          <p class="mini">Bundled sample content is shown below as a readonly template you can copy and adapt.</p>
+          <% source_samples.each do |key, sample| %>
+            <section class="sample-preview" data-preview-group="source" data-preview-value="<%= h(key) %>">
+              <div class="preview-head">
+                <strong><%= h(sample.fetch("label")) %> Markdown</strong>
+                <span class="note">Readonly reference content from <code><%= h(sample.fetch("path")) %></code></span>
+              </div>
+              <textarea class="sample-preview-text" readonly spellcheck="false"><%= h(sample_file_content(sample.fetch("path"))) %></textarea>
+            </section>
+          <% end %>
         </div>
 
         <div class="source-pane" data-pane-group="source" data-pane-value="paste">
@@ -127,6 +137,16 @@
                 <span class="note"><%= h(selected_bibliography_sample.fetch("note")) %></span>
                 <code><%= h(selected_bibliography_sample.fetch("workspace_path")) %></code>
               </div>
+              <p class="mini">Use the bundled bibliography below as a reference for how your own JSON or BibTeX file can be structured.</p>
+              <% bibliography_samples.each do |key, sample| %>
+                <section class="sample-preview" data-preview-group="bibliography" data-preview-value="<%= h(key) %>">
+                  <div class="preview-head">
+                    <strong><%= h(sample.fetch("label")) %></strong>
+                    <span class="note">Readonly reference content from <code><%= h(sample.fetch("workspace_path")) %></code></span>
+                  </div>
+                  <textarea class="sample-preview-text" readonly spellcheck="false"><%= h(sample_file_content(sample.fetch("workspace_path"))) %></textarea>
+                </section>
+              <% end %>
             </div>
 
             <div class="source-pane" data-pane-group="bibliography" data-pane-value="upload">
@@ -188,12 +208,22 @@
                 <span class="note"><%= h(selected_csl_sample.fetch("note")) %></span>
                 <code><%= h(selected_csl_sample.fetch("workspace_path")) %></code>
               </div>
+              <p class="mini">The bundled CSL is also shown directly so users can inspect the XML structure before uploading their own style file.</p>
+              <% csl_samples.each do |key, sample| %>
+                <section class="sample-preview" data-preview-group="csl" data-preview-value="<%= h(key) %>">
+                  <div class="preview-head">
+                    <strong><%= h(sample.fetch("label")) %></strong>
+                    <span class="note">Readonly reference content from <code><%= h(sample.fetch("workspace_path")) %></code></span>
+                  </div>
+                  <textarea class="sample-preview-text" readonly spellcheck="false"><%= h(sample_file_content(sample.fetch("workspace_path"))) %></textarea>
+                </section>
+              <% end %>
             </div>
 
             <div class="source-pane" data-pane-group="csl" data-pane-value="upload">
               <label>
                 CSL File
-                <input type="file" name="csl_file" accept=".csl,text/plain,text/xml,application/xml">
+                <input type="file" name="csl_file" accept=".csl,text/plain,text/xml,application/xml,application/csl+xml,application/vnd.citationstyles.style+xml">
               </label>
               <p class="mini">
                 <% if state_value("csl_upload_filename").to_s.empty? %>

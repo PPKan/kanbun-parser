@@ -44,6 +44,33 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_pandoc_command_uses_cli_metadata_for_bibliography_and_csl_overrides
+    with_temp_markdown do |input_path, config_path|
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        output_path: File.join(File.dirname(input_path), "out.pdf"),
+        config_path: config_path,
+        preset_name: nil,
+        emit_tex_path: nil,
+        pandoc_metadata_overrides: {
+          "bibliography" => "uploads/custom-library.bib",
+          "csl" => "uploads/custom-style.csl"
+        }
+      )
+
+      command = compiler.send(
+        :pandoc_command,
+        template_path: "template.tex",
+        metadata_path: "metadata.yml",
+        tex_path: "out.tex"
+      )
+
+      assert_includes command, "--metadata"
+      assert_includes command, "bibliography=uploads/custom-library.bib"
+      assert_includes command, "csl=uploads/custom-style.csl"
+    end
+  end
+
   private
 
   def compiler_for(input_path, config_path)
