@@ -17,7 +17,13 @@ module JPMD
     BIBLIOGRAPHY_UPLOAD_EXTENSIONS = %w[.json .bib].freeze
     BIBLIOGRAPHY_UPLOAD_TYPES = %w[application/json text/plain text/x-bibtex application/x-bibtex].freeze
     CSL_UPLOAD_EXTENSIONS = %w[.csl].freeze
-    CSL_UPLOAD_TYPES = %w[text/plain text/xml application/xml].freeze
+    CSL_UPLOAD_TYPES = %w[
+      text/plain
+      text/xml
+      application/xml
+      application/csl+xml
+      application/vnd.citationstyles.style+xml
+    ].freeze
 
     SOURCE_SAMPLES = {
       "academic-paper" => {
@@ -369,7 +375,7 @@ module JPMD
       end
 
       def upload_type(upload)
-        fetch_upload_value(upload, :type).to_s
+        fetch_upload_value(upload, :type).to_s.split(";", 2).first.strip.downcase
       end
 
       def upload_tempfile(upload)

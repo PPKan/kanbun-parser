@@ -128,6 +128,21 @@ class JPMDWebAppTest < Minitest::Test
     assert_equal "custom-style.csl", @captured.last.dig(:csl, "filename")
   end
 
+  def test_uploaded_csl_accepts_vendor_content_type_with_charset
+    csl = uploaded_file("minimal.csl", "<style></style>", "application/vnd.citationstyles.style+xml; charset=UTF-8")
+
+    post "/build", {
+      "source_mode" => "paste",
+      "markdown_text" => "# Pasted\n\n本文",
+      "csl_mode" => "upload",
+      "csl_file" => csl
+    }
+
+    assert last_response.ok?
+    assert_equal "upload", @captured.last.dig(:csl, "mode")
+    assert_equal "minimal.csl", @captured.last.dig(:csl, "filename")
+  end
+
   def test_source_mode_controls_which_input_is_compiled
     upload = uploaded_file("sample.md", "# Uploaded\n\n本文", "text/markdown")
 
