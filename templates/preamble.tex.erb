@@ -2,8 +2,17 @@
 \renewcommand{\jlreqkanjiskip}{<%= kanjiskip %> plus 0.1pt minus 0.1pt}
 <%= latin_font_setup %>
 <%= japanese_font_setup %>
+\newcommand{\jpmdwritingmode}{<%= writing_mode %>}
 
 \usepackage{titlesec}
+<% if writing_mode == "tate" %>
+\titleformat{\section}{\normalfont\bfseries\Large}{}{0pt}{}
+\titlespacing*{\section}{0pt}{2\zw}{1\zw}
+\pagestyle{empty}
+\setlength{\parindent}{1\zw}
+\setlength{\parskip}{0pt}
+\interfootnotelinepenalty=10000
+<% else %>
 \titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
 \titlespacing*{\section}{0pt}{1\baselineskip}{0pt}
 
@@ -38,6 +47,7 @@
   \renewcommand{\footrulewidth}{0pt}
   \fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
 }
+<% end %>
 
 \usepackage{graphicx}
 \usepackage{longtable}
@@ -63,6 +73,7 @@
 \newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
 \newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
 \newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
+\ltjsetruby{fontcmd=\kanbunfuriganafont,stretchruby={1}{1}{1},stretch={1}{1}{1},intergap=0}
 \newcommand{\kanbunsidegap}{<%= side_gap %>}
 \newcommand{\kanbunsideminwidth}{<%= side_min_width %>}
 \newcommand{\kanbunfuriganashiftx}{\dimexpr <%= furigana_right %> - <%= furigana_left %>\relax}

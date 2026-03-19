@@ -84,12 +84,13 @@ module JPMD
       class_options = [
         "lualatex",
         "paper=a4",
+        ("tate" if @derived.fetch("writing_mode") == "tate"),
         "fontsize=#{@derived.fetch("body_size")}",
         "jafontsize=#{@derived.fetch("body_size")}",
         "line_length=#{@derived.fetch("characters_per_line")}zw",
         "number_of_lines=#{@derived.fetch("lines_per_page")}",
         "baselineskip=#{format_pt(@derived.fetch("baselineskip_pt"))}"
-      ].join(",")
+      ].compact.join(",")
 
       rendered = source.sub(
         /\\documentclass\[[^\n]+\]\{jlreq\}/,
@@ -128,7 +129,8 @@ module JPMD
         okurigana_left: tex_dimension(kanbun.fetch("okurigana").fetch("shift").fetch("left")),
         side_gap: tex_dimension(kanbun.fetch("side").fetch("gap")),
         side_min_width: tex_dimension(kanbun.fetch("side").fetch("min_width")),
-        body_size: tex_dimension(layout.fetch("font").fetch("body_size"))
+        body_size: tex_dimension(layout.fetch("font").fetch("body_size")),
+        writing_mode: @derived.fetch("writing_mode")
       )
     end
 

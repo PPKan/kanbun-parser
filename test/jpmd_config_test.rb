@@ -115,4 +115,22 @@ class JPMDConfigTest < Minitest::Test
       assert_equal "11pt", resolved.fetch("derived").fetch("body_size")
     end
   end
+
+  def test_linear_preset_uses_tate_writing_mode_and_swapped_page_axes
+    with_temp_markdown do |input_path, config_path|
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path,
+        cli_preset: "linear"
+      ).resolve
+
+      derived = resolved.fetch("derived")
+      assert_equal "tate", derived.fetch("writing_mode")
+      assert_equal 24, derived.fetch("characters_per_line")
+      assert_equal 11, derived.fetch("lines_per_page")
+      assert_operator derived.fetch("kanjiskip_pt"), :>, 0
+      assert_operator derived.fetch("baselineskip_pt"), :>, 0
+      assert_operator derived.fetch("baselineskip_pt"), :>, derived.fetch("kanjiskip_pt")
+    end
+  end
 end

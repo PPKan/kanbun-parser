@@ -1,78 +1,78 @@
 cases:
-  - slug: chars-20
-    label: 20 Characters Per Line
-    input: examples/academic-paper.md
+  - slug: chars-18
+    label: 18 Characters Per Column
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         grid:
-          characters_per_line: 20
+          characters_per_line: 18
 
-  - slug: chars-30-default
-    label: 30 Characters Per Line
-    input: examples/academic-paper.md
+  - slug: chars-24-default
+    label: 24 Characters Per Column
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         grid:
-          characters_per_line: 30
+          characters_per_line: 24
 
-  - slug: chars-40-invalid
-    label: 40 Characters Per Line At 12pt
-    input: examples/academic-paper.md
+  - slug: chars-32-dense
+    label: 32 Characters Per Column
+    input: examples/linear-kundoku.md
+    focus: layout
+    overrides:
+      layout:
+        grid:
+          characters_per_line: 32
+
+  - slug: chars-48-at-16pt-invalid
+    label: 48 Characters Per Column At 16pt
+    input: examples/linear-kundoku.md
     focus: layout
     expected: failure
     overrides:
       layout:
         grid:
-          characters_per_line: 40
+          characters_per_line: 48
+        font:
+          body_size: 16pt
 
-  - slug: chars-40-at-10pt
-    label: 40 Characters Per Line At 10pt
-    input: examples/academic-paper.md
+  - slug: cols-9
+    label: 9 Columns Per Page
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         grid:
-          characters_per_line: 40
-        font:
-          body_size: 10pt
+          lines_per_page: 9
 
-  - slug: lines-20
-    label: 20 Lines Per Page
-    input: examples/academic-paper.md
+  - slug: cols-13
+    label: 13 Columns Per Page
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         grid:
-          lines_per_page: 20
+          lines_per_page: 13
 
-  - slug: lines-40
-    label: 40 Lines Per Page
-    input: examples/academic-paper.md
-    focus: layout
-    overrides:
-      layout:
-        grid:
-          lines_per_page: 40
-
-  - slug: font-10pt
-    label: 10pt Body Text
-    input: examples/academic-paper.md
+  - slug: font-12pt
+    label: 12pt Body Text
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         font:
-          body_size: 10pt
+          body_size: 12pt
 
-  - slug: font-14pt
-    label: 14pt Body Text
-    input: examples/academic-paper.md
+  - slug: font-16pt
+    label: 16pt Body Text
+    input: examples/linear-kundoku.md
     focus: layout
     overrides:
       layout:
         font:
-          body_size: 14pt
+          body_size: 16pt
 
   - slug: kanbun-default
     label: Default Kanbun Layout

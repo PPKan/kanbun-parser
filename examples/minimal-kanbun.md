@@ -1,6 +1,6 @@
 ---
 jpmd:
-  preset: academic
+  preset: linear
 ---
 
 # 漢文最小例

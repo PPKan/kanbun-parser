@@ -1,6 +1,6 @@
 ---
 jpmd:
-  preset: academic
+  preset: linear
 ---
 
 \begin{center}
@@ -11,7 +11,7 @@ jpmd:
 視覚検証用サンプル\\
 組版試験\\
 担当者\\
-tester@example.jp
+試験用控
 \end{flushright}
 \vspace{\baselineskip}
 

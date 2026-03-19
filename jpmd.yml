@@ -1,4 +1,4 @@
-default_preset: academic
+default_preset: linear
 
 presets:
   academic:

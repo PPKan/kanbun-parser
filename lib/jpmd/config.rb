@@ -10,6 +10,7 @@ module JPMD
     BUILTIN_PRESETS = {
       "academic" => {
         "layout" => {
+          "writing_mode" => "yoko",
           "margins" => {
             "top" => "2.5cm",
             "right" => "3cm",
@@ -57,6 +58,57 @@ module JPMD
             }
           }
         }
+      },
+      "linear" => {
+        "layout" => {
+          "writing_mode" => "tate",
+          "margins" => {
+            "top" => "2.0cm",
+            "right" => "2.2cm",
+            "bottom" => "2.0cm",
+            "left" => "2.2cm"
+          },
+          "grid" => {
+            "characters_per_line" => 24,
+            "lines_per_page" => 11
+          },
+          "font" => {
+            "body_size" => "14pt"
+          }
+        },
+        "kanbun" => {
+          "side" => {
+            "gap" => "0.18zw",
+            "min_width" => "0.90zw"
+          },
+          "furigana" => {
+            "size" => "8pt",
+            "shift" => {
+              "up" => "0pt",
+              "right" => "0.20zw",
+              "down" => "0pt",
+              "left" => "0pt"
+            }
+          },
+          "kaeriten" => {
+            "size" => "8pt",
+            "shift" => {
+              "up" => "0pt",
+              "right" => "0.20zw",
+              "down" => "0.20zw",
+              "left" => "0pt"
+            }
+          },
+          "okurigana" => {
+            "size" => "8pt",
+            "shift" => {
+              "up" => "0pt",
+              "right" => "0.20zw",
+              "down" => "0.10zw",
+              "left" => "0pt"
+            }
+          }
+        }
       }
     }.freeze
 
@@ -74,6 +126,7 @@ module JPMD
 
     PHYSICAL_DIMENSION_PATTERN = /\A(0|[0-9]+(?:\.[0-9]+)?)(pt|mm|cm|in)\z/
     GENERIC_DIMENSION_PATTERN = /\A(0|[0-9]+(?:\.[0-9]+)?)(pt|mm|cm|in|bp|dd|cc|sp|ex|em|zw|zh)\z/
+    WRITING_MODES = %w[yoko tate].freeze
 
     def initialize(input_path:, config_path:, cli_preset:)
       @input_path = input_path
@@ -146,6 +199,7 @@ module JPMD
       grid = fetch_hash(layout, "grid")
       font = fetch_hash(layout, "font")
       kanbun = fetch_hash(settings, "kanbun")
+      writing_mode = resolve_writing_mode(layout["writing_mode"])
 
       top_pt = parse_physical_dimension(fetch_required(margins, "top"), "layout.margins.top")
       right_pt = parse_physical_dimension(fetch_required(margins, "right"), "layout.margins.right")
@@ -164,13 +218,21 @@ module JPMD
       raise JPMD::ValidationError, "Margins leave no usable text width on A4 paper" unless text_width_pt.positive?
       raise JPMD::ValidationError, "Margins leave no usable text height on A4 paper" unless text_height_pt.positive?
 
-      kanjiskip_pt = (text_width_pt - (characters_per_line * body_size_pt)) / (characters_per_line - 1)
+      line_length_pt, line_progression_pt =
+        if writing_mode == "tate"
+          [text_height_pt, text_width_pt]
+        else
+          [text_width_pt, text_height_pt]
+        end
+
+      kanjiskip_pt = (line_length_pt - (characters_per_line * body_size_pt)) / (characters_per_line - 1)
       raise JPMD::ValidationError, "Layout requires negative kanjiskip; reduce font size, widen the text block, or lower characters_per_line" if kanjiskip_pt.negative?
 
-      baselineskip_pt = text_height_pt / lines_per_page
+      baselineskip_pt = line_progression_pt / lines_per_page
       raise JPMD::ValidationError, "Layout requires nonpositive baselineskip" unless baselineskip_pt.positive?
 
       {
+        "writing_mode" => writing_mode,
         "characters_per_line" => characters_per_line,
         "lines_per_page" => lines_per_page,
         "body_size" => fetch_required(font, "body_size"),
@@ -246,6 +308,13 @@ module JPMD
       else
         value
       end
+    end
+
+    def resolve_writing_mode(value)
+      mode = string_or_nil(value) || "yoko"
+      raise JPMD::ValidationError, "layout.writing_mode must be one of: #{WRITING_MODES.join(", ")}" unless WRITING_MODES.include?(mode)
+
+      mode
     end
 
     def deep_merge(base, override)

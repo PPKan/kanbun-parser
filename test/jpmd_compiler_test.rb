@@ -44,6 +44,30 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_template_adds_tate_class_option_for_linear_preset
+    with_temp_markdown do |input_path, config_path|
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        output_path: File.join(File.dirname(input_path), "out.pdf"),
+        config_path: config_path,
+        preset_name: "linear",
+        emit_tex_path: nil
+      )
+
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path,
+        cli_preset: "linear"
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+
+      template = compiler.send(:render_template)
+      assert_includes template, "\\documentclass["
+      assert_includes template, ",tate,"
+    end
+  end
+
   private
 
   def compiler_for(input_path, config_path)
