@@ -77,6 +77,9 @@ module JPMD
           }
         },
         "kanbun" => {
+          "kumi" => "beta",
+          "tateaki" => 1,
+          "okuriintrusion" => 1,
           "side" => {
             "gap" => "0.18zw",
             "min_width" => "0.90zw"

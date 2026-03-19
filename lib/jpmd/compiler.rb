@@ -130,7 +130,11 @@ module JPMD
         side_gap: tex_dimension(kanbun.fetch("side").fetch("gap")),
         side_min_width: tex_dimension(kanbun.fetch("side").fetch("min_width")),
         body_size: tex_dimension(layout.fetch("font").fetch("body_size")),
-        writing_mode: @derived.fetch("writing_mode")
+        writing_mode: @derived.fetch("writing_mode"),
+        tate_kanbun_kumi: kanbun.fetch("kumi", "beta"),
+        tate_kanbun_tateaki: tate_kanbun_float(kanbun.fetch("tateaki", 1)),
+        tate_kanbun_okuriintrusion: tate_kanbun_float(kanbun.fetch("okuriintrusion", 1)),
+        tate_kanbun_scale: tate_kanbun_scale(layout.fetch("font").fetch("body_size"), kanbun.fetch("furigana").fetch("size"))
       )
     end
 
@@ -283,6 +287,7 @@ module JPMD
           "left=#{margins.fetch("left")}",
           "right=#{margins.fetch("right")}"
         ],
+        "jpmd-writing-mode" => @derived.fetch("writing_mode"),
         "header-includes" => [
           "\\input{#{tex_path(preamble_path)}}"
         ]
@@ -376,6 +381,33 @@ module JPMD
 
     def tex_dimension(value)
       value.to_s.sub(/zw\z/, "\\\\zw").sub(/zh\z/, "\\\\zh")
+    end
+
+    def tate_kanbun_float(value)
+      number = Float(value.to_s)
+      format("%.3f", number).sub(/\.?0+\z/, "")
+    rescue ArgumentError, TypeError
+      "1"
+    end
+
+    def tate_kanbun_scale(body_size, furigana_size)
+      body = parse_number_and_unit(body_size)
+      ruby = parse_number_and_unit(furigana_size)
+      return "2" unless body && ruby
+      return "2" unless body.fetch(:unit) == ruby.fetch(:unit)
+      return "2" unless ruby.fetch(:value).positive?
+
+      format("%.3f", body.fetch(:value) / ruby.fetch(:value)).sub(/\.?0+\z/, "")
+    end
+
+    def parse_number_and_unit(value)
+      match = value.to_s.match(/\A([0-9]+(?:\.[0-9]+)?)([A-Za-z]+)\z/)
+      return nil unless match
+
+      {
+        value: match[1].to_f,
+        unit: match[2]
+      }
     end
 
     def windows?

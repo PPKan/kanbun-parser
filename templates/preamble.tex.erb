@@ -63,6 +63,24 @@
 \captionsetup[figure]{position=bottom}
 
 \usepackage{luatexja-ruby}
+\newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
+\newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
+\newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
+\ltjsetruby{fontcmd=\kanbunfuriganafont,stretchruby={1}{1}{1},stretch={1}{1}{1},intergap=0}
+<% if writing_mode == "tate" %>
+\newcommand{\jpmdkanbunrubyfont}{\addjfontfeature{YokoFeatures={RawFeature={-pkna,+ruby}},TateFeatures={RawFeature={-pkna,+ruby}}}}
+\usepackage[
+  scale=<%= tate_kanbun_scale %>,
+  unit=1\zw,
+  tateaki=<%= tate_kanbun_tateaki %>,
+  okuriintrusion=<%= tate_kanbun_okuriintrusion %>,
+  rubyfontcmd=\jpmdkanbunrubyfont,
+  <%= tate_kanbun_kumi %>
+]{kanbun}
+\newcommand{\kanbun}[4]{%
+  \kanjiunit{\furiokuri{#2}{#3}}{}{#1}{}{#4}{}%
+}
+<% else %>
 \newsavebox{\kanbunbasebox}
 \newsavebox{\kanbunmainbox}
 \newsavebox{\kanbunfuriganabox}
@@ -70,10 +88,6 @@
 \newsavebox{\kanbunokuribox}
 \newdimen\kanbunmainsideoffset
 \newcommand{\kanbunifempty}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
-\newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
-\newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
-\newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
-\ltjsetruby{fontcmd=\kanbunfuriganafont,stretchruby={1}{1}{1},stretch={1}{1}{1},intergap=0}
 \newcommand{\kanbunsidegap}{<%= side_gap %>}
 \newcommand{\kanbunsideminwidth}{<%= side_min_width %>}
 \newcommand{\kanbunfuriganashiftx}{\dimexpr <%= furigana_right %> - <%= furigana_left %>\relax}
@@ -171,3 +185,4 @@
   }%
   \endgroup
 }
+<% end %>

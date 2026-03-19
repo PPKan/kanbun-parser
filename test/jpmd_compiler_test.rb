@@ -68,6 +68,57 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_metadata_exposes_tate_writing_mode_for_filter
+    with_temp_markdown do |input_path, config_path|
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        output_path: File.join(File.dirname(input_path), "out.pdf"),
+        config_path: config_path,
+        preset_name: "linear",
+        emit_tex_path: nil
+      )
+
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path,
+        cli_preset: "linear"
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+
+      metadata = compiler.send(:render_metadata, "/tmp/preamble.tex")
+      assert_includes metadata, "jpmd-writing-mode: tate"
+    end
+  end
+
+  def test_render_preamble_loads_kanbun_package_for_tate_mode
+    with_temp_markdown do |input_path, config_path|
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        output_path: File.join(File.dirname(input_path), "out.pdf"),
+        config_path: config_path,
+        preset_name: "linear",
+        emit_tex_path: nil
+      )
+
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path,
+        cli_preset: "linear"
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+
+      compiler.stub(:resolve_font_setup, { latin: "\\setmainfont{Times New Roman}", japanese: "\\setmainjfont{MS Mincho}" }) do
+        preamble = compiler.send(:render_preamble)
+        assert_includes preamble, "\\usepackage["
+        assert_includes preamble, "]{kanbun}"
+        assert_includes preamble, "unit=1\\zw"
+        assert_includes preamble, "\\newcommand{\\kanbun}[4]"
+      end
+    end
+  end
+
   private
 
   def compiler_for(input_path, config_path)
