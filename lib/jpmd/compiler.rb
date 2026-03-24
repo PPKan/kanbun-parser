@@ -14,6 +14,7 @@ module JPMD
     WINDOWS_PANDOC = File.expand_path("~/AppData/Local/Pandoc/pandoc.exe")
     WINDOWS_LUALATEX = "C:/texlive/2025/bin/windows/lualatex.exe"
     APP_ROOT = File.expand_path("../..", __dir__)
+    TRANSFER_DIR = File.expand_path("../transfer", APP_ROOT)
     TIMES_NEW_ROMAN_ENV_VARS = {
       regular: "JPMD_TIMES_NEW_ROMAN_REGULAR",
       bold: "JPMD_TIMES_NEW_ROMAN_BOLD",
@@ -53,13 +54,14 @@ module JPMD
       FileUtils.mkdir_p(File.dirname(@emit_tex_path)) if @emit_tex_path
 
       Dir.mktmpdir("jpmd-") do |tmpdir|
+        pandoc_input_path = prepare_pandoc_input(tmpdir)
         template_path = write_file(tmpdir, "template.tex", render_template)
         preamble_path = write_file(tmpdir, "preamble.tex", render_preamble)
         metadata_path = write_file(tmpdir, "metadata.yml", render_metadata(preamble_path))
         tex_basename = "#{File.basename(@output_path, ".pdf")}.tex"
         tex_path = File.join(tmpdir, tex_basename)
 
-        run_pandoc(template_path: template_path, metadata_path: metadata_path, tex_path: tex_path)
+        run_pandoc(input_path: pandoc_input_path, template_path: template_path, metadata_path: metadata_path, tex_path: tex_path)
         FileUtils.cp(tex_path, @emit_tex_path) if @emit_tex_path
 
         2.times { run_lualatex(tex_path, tmpdir) }
@@ -68,6 +70,7 @@ module JPMD
         raise JPMD::CommandError, "Expected PDF was not generated: #{pdf_path}" unless File.file?(pdf_path)
 
         FileUtils.cp(pdf_path, @output_path)
+        copy_output_to_transfer_directory
       end
 
       @output_path
@@ -280,7 +283,10 @@ module JPMD
 
     def render_metadata(preamble_path)
       margins = @settings.fetch("layout").fetch("margins")
-      metadata = {
+      document_metadata = document_frontmatter_metadata.dup
+      header_includes = Array(document_metadata.delete("header-includes"))
+
+      metadata = document_metadata.merge(
         "geometry" => [
           "top=#{margins.fetch("top")}",
           "bottom=#{margins.fetch("bottom")}",
@@ -288,19 +294,19 @@ module JPMD
           "right=#{margins.fetch("right")}"
         ],
         "jpmd-writing-mode" => @derived.fetch("writing_mode"),
-        "header-includes" => [
+        "header-includes" => header_includes + [
           "\\input{#{tex_path(preamble_path)}}"
         ]
-      }
+      )
 
       YAML.dump(metadata)
     end
 
-    def run_pandoc(template_path:, metadata_path:, tex_path:)
+    def run_pandoc(input_path:, template_path:, metadata_path:, tex_path:)
       command = [
         resolve_pandoc,
-        @input_path,
-        "-f", "markdown+bracketed_spans",
+        input_path,
+        "-f", pandoc_input_format,
         "--standalone",
         "--citeproc",
         "--template", template_path,
@@ -311,6 +317,10 @@ module JPMD
       ]
 
       execute(command, chdir: APP_ROOT, failure_label: "Pandoc")
+    end
+
+    def pandoc_input_format
+      "markdown+bracketed_spans-yaml_metadata_block"
     end
 
     def run_lualatex(tex_path, workdir)
@@ -369,6 +379,40 @@ module JPMD
       path = File.join(dir, name)
       File.write(path, content, mode: "w:utf-8")
       path
+    end
+
+    def prepare_pandoc_input(dir)
+      write_file(dir, File.basename(@input_path), pandoc_input_content)
+    end
+
+    def pandoc_input_content
+      content = File.read(@input_path, mode: "r:utf-8").sub(/\A\uFEFF/, "")
+      content = content.sub(/\A---\s*\r?\n.*?\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m, "")
+      content.lines.reject { |line| line.match?(/\A[ \t]*---[ \t]*(?:\r?\n)?\z/) }.join
+    end
+
+    def copy_output_to_transfer_directory
+      FileUtils.mkdir_p(transfer_directory)
+      FileUtils.cp(@output_path, File.join(transfer_directory, File.basename(@output_path)))
+    end
+
+    def transfer_directory
+      TRANSFER_DIR
+    end
+
+    def document_frontmatter_metadata
+      metadata = extract_frontmatter_metadata
+      metadata.is_a?(Hash) ? metadata.reject { |key, _value| key.to_s == "jpmd" } : {}
+    end
+
+    def extract_frontmatter_metadata
+      content = File.read(@input_path, mode: "r:utf-8").sub(/\A\uFEFF/, "")
+      match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
+      return {} unless match
+
+      YAML.safe_load(match[1], aliases: true) || {}
+    rescue Psych::SyntaxError => e
+      raise JPMD::ValidationError, "Invalid YAML frontmatter in #{@input_path}: #{e.message}"
     end
 
     def tex_path(path)

@@ -18,21 +18,61 @@
   </locale>
   <macro name="contributors">
     <names variable="author">
-      <name delimiter="" initialize-with=""/>
+      <name delimiter=", " initialize-with=""/>
       <substitute>
-        <names variable="editor">
-          <name delimiter="" initialize-with=""/>
+        <names variable="editor" suffix="（校注）">
+          <name delimiter=", " initialize-with=""/>
         </names>
         <text variable="title"/>
       </substitute>
     </names>
   </macro>
   <macro name="title">
-    <text variable="title" prefix="『" suffix="』"/>
+    <choose>
+      <if type="webpage">
+        <text variable="title" prefix="「" suffix="」"/>
+      </if>
+      <else>
+        <text variable="title" prefix="『" suffix="』"/>
+      </else>
+    </choose>
+  </macro>
+  <macro name="website">
+    <choose>
+      <if variable="container-title">
+        <text variable="container-title"/>
+      </if>
+      <else-if variable="source">
+        <text variable="source"/>
+      </else-if>
+      <else-if variable="publisher">
+        <text variable="publisher"/>
+      </else-if>
+    </choose>
+  </macro>
+  <macro name="year">
+    <choose>
+      <if variable="issued">
+        <date variable="issued">
+          <date-part name="year"/>
+        </date>
+      </if>
+      <else-if variable="accessed">
+        <date variable="accessed">
+          <date-part name="year"/>
+        </date>
+      </else-if>
+    </choose>
   </macro>
   <macro name="publication">
     <choose>
-      <if variable="publisher issued">
+      <if type="webpage">
+        <group prefix="（" suffix="）" delimiter="、">
+          <text macro="website"/>
+          <text macro="year"/>
+        </group>
+      </if>
+      <else-if variable="publisher issued">
         <group prefix="（" suffix="）" delimiter="、">
           <text variable="publisher"/>
           <date variable="issued">
@@ -40,7 +80,7 @@
             <date-part name="month" prefix="." form="numeric-leading-zeros"/>
           </date>
         </group>
-      </if>
+      </else-if>
       <else-if variable="publisher">
         <text variable="publisher" prefix="（" suffix="）"/>
       </else-if>
@@ -55,23 +95,45 @@
   </macro>
   <citation>
     <layout delimiter="；">
-      <group delimiter="">
-        <text macro="contributors"/>
-        <text macro="title"/>
-        <text macro="publication"/>
-        <text macro="locator"/>
-        <text value="。"/>
-      </group>
+      <choose>
+        <if type="webpage">
+          <group delimiter="">
+            <text macro="title"/>
+            <text macro="publication"/>
+            <text value="。"/>
+          </group>
+        </if>
+        <else>
+          <group delimiter="">
+            <text macro="contributors"/>
+            <text macro="title"/>
+            <text macro="publication"/>
+            <text macro="locator"/>
+            <text value="。"/>
+          </group>
+        </else>
+      </choose>
     </layout>
   </citation>
   <bibliography>
     <layout>
-      <group delimiter="">
-        <text macro="contributors"/>
-        <text macro="title"/>
-        <text macro="publication"/>
-        <text value="。"/>
-      </group>
+      <choose>
+        <if type="webpage">
+          <group delimiter="">
+            <text macro="title"/>
+            <text macro="publication"/>
+            <text value="。"/>
+          </group>
+        </if>
+        <else>
+          <group delimiter="">
+            <text macro="contributors"/>
+            <text macro="title"/>
+            <text macro="publication"/>
+            <text value="。"/>
+          </group>
+        </else>
+      </choose>
     </layout>
   </bibliography>
 </style>

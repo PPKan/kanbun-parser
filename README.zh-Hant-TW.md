@@ -21,6 +21,7 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 - `examples/academic-paper.md`: 完整論文範例
 - `examples/linear-kundoku.md`: 以《馬説》為底的縱排訓讀試作
 - `examples/minimal-kanbun.md`: 只測漢文的最小範例
+- `examples/two-file-manuscript.md`: 將 Markdown 本文與文獻資料拆成兩個檔案的範例
 - `examples/scripts/`: Linux / Windows 範例腳本
 - `filter.lua`: Pandoc 過濾器，將漢文標記轉成 TeX
 - `templates/preamble.tex.erb`: 組版與漢文註記模板
@@ -39,6 +40,8 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 ```markdown
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
+
+如果你的正文和文獻資料本來就分成兩個檔案，請從 `examples/two-file-manuscript.md` 搭配 `jpmd build-pair` 開始。這個流程只會在暫存目錄產生合併後的包裝檔，不會改動原始 Markdown。
 
 ## Linux 設定
 
@@ -65,6 +68,7 @@ ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
 ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
+ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
 ```
 
 預期輸出：
@@ -80,6 +84,8 @@ Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 - `out/minimal-kanbun.tex`: 方便檢查的 TeX 輸出
 - `out/linear-kundoku.pdf`: 縱排訓讀試作 PDF
 - `out/linear-kundoku.tex`: 方便檢查的 TeX 輸出
+- `out/two-file-manuscript.pdf`: 兩檔流程範例的 PDF
+- `out/two-file-manuscript.tex`: 兩檔流程範例的 TeX 輸出
 
 也可以直接跑範例腳本：
 
@@ -116,6 +122,7 @@ ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 .\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
 .\bin\jpmd.cmd build .\examples\linear-kundoku.md -o .\out\linear-kundoku.pdf --emit-tex .\out\linear-kundoku.tex
+.\bin\jpmd.cmd build-pair .\examples\two-file-manuscript.md .\references\sample-zotero.json -o .\out\two-file-manuscript.pdf --emit-tex .\out\two-file-manuscript.tex
 ```
 
 也可以跑 PowerShell 範例腳本：
@@ -152,6 +159,8 @@ out/variation-suite/report.html
 ## 補充
 
 - `out/` 是產物目錄，預設不納入 Git。
+- 主要 CLI 指令現在有 `build` 和 `build-pair`。
 - 全域設定在 `jpmd.yml`，單一文件可用 `jpmd:` frontmatter 覆寫。
+- 新進使用者可以自己決定輸出路徑與版面類型。PDF 的目的地由 `-o` 決定，版面可用 `--preset academic` 或 `--preset linear` 切換。
 - 這個分支新增了 `linear` 內建 preset，作為縱排訓讀的預設輸出；`academic` 則保留作橫排參考。
 - 更細的說明請看 `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md`。
