@@ -38,6 +38,8 @@ If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. Tha
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
+If you are new to the repo, treat those examples as starting points rather than fixed output rules. Choose the sample, output path, and layout settings that match the PDF you actually want to produce.
+
 ## Linux Setup
 
 These steps assume a Debian or Ubuntu style machine. The repo vendors the exact Linux font files under `vendor/fonts/`, so Linux builds do not need a Windows font directory.
