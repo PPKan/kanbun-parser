@@ -29,11 +29,11 @@
   </macro>
   <macro name="title">
     <choose>
-      <if type="webpage">
-        <text variable="title" prefix="「" suffix="」"/>
+      <if type="book collection" match="any">
+        <text variable="title" prefix="『" suffix="』"/>
       </if>
       <else>
-        <text variable="title" prefix="『" suffix="』"/>
+        <text variable="title" prefix="「" suffix="」"/>
       </else>
     </choose>
   </macro>

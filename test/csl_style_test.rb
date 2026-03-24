@@ -21,12 +21,20 @@ class CSLStyleTest < Minitest::Test
     assert_equal "（校注）", editor_names.attributes["suffix"]
   end
 
-  def test_webpage_title_uses_corner_brackets
+  def test_book_title_uses_double_corner_brackets
     style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
-    webpage_title = REXML::XPath.first(style, "//*[local-name()='macro' and @name='title']/*[local-name()='choose']/*[local-name()='if' and @type='webpage']/*[local-name()='text']")
+    book_title = REXML::XPath.first(style, "//*[local-name()='macro' and @name='title']/*[local-name()='choose']/*[local-name()='if' and @match='any' and @type='book collection']/*[local-name()='text']")
 
-    assert_equal "「", webpage_title.attributes["prefix"]
-    assert_equal "」", webpage_title.attributes["suffix"]
+    assert_equal "『", book_title.attributes["prefix"]
+    assert_equal "』", book_title.attributes["suffix"]
+  end
+
+  def test_paper_title_uses_corner_brackets
+    style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
+    paper_title = REXML::XPath.first(style, "//*[local-name()='macro' and @name='title']/*[local-name()='choose']/*[local-name()='else']/*[local-name()='text']")
+
+    assert_equal "「", paper_title.attributes["prefix"]
+    assert_equal "」", paper_title.attributes["suffix"]
   end
 
   def test_webpage_publication_uses_website_and_year
