@@ -61,7 +61,7 @@ module JPMD
       match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
       return [{}, content] unless match
 
-      metadata = YAML.safe_load(match[1], aliases: true) || {}
+      metadata = JPMD.safe_yaml_load(match[1])
       raise JPMD::ValidationError, "YAML frontmatter in #{@markdown_path} must decode to a mapping" unless metadata.is_a?(Hash)
 
       [metadata, content[match[0].length..] || ""]

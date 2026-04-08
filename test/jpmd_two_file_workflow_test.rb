@@ -41,7 +41,7 @@ class JPMDTwoFileWorkflowTest < Minitest::Test
 
       refute_nil match
 
-      metadata = YAML.safe_load(match[1], aliases: true)
+      metadata = JPMD.safe_yaml_load(match[1])
       body = merged[match[0].length..]
 
       assert_equal "Sample Title", metadata["title"]
@@ -102,12 +102,46 @@ class JPMDTwoFileWorkflowTest < Minitest::Test
       assert_equal File.expand_path(emit_tex_path), fake_compiler.kwargs.fetch(:emit_tex_path)
       refute_equal File.expand_path(markdown_path), fake_compiler.kwargs.fetch(:input_path)
 
-      merged_metadata = YAML.safe_load(
-        fake_compiler.merged_input.match(/\A---\s*\n(.*?)\n---\s*\n\n/m)[1],
-        aliases: true
+      merged_metadata = JPMD.safe_yaml_load(
+        fake_compiler.merged_input.match(/\A---\s*\n(.*?)\n---\s*\n\n/m)[1]
       )
 
       assert_equal File.expand_path(bibliography_path), merged_metadata.fetch("bibliography")
+    end
+  end
+
+  def test_frontmatter_dates_are_allowed
+    Dir.mktmpdir("jpmd-two-file-") do |dir|
+      markdown_path = File.join(dir, "draft.md")
+      bibliography_path = File.join(dir, "library.json")
+      output_path = File.join(dir, "draft.pdf")
+      config_path = File.join(dir, "jpmd.yml")
+
+      File.write(markdown_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        title: Sample Title
+        date: 2026-04-08
+        ---
+
+        # Heading
+      MARKDOWN
+      File.write(bibliography_path, "[]\n", mode: "w:utf-8")
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+
+      workflow = JPMD::TwoFileWorkflow.new(
+        markdown_path: markdown_path,
+        bibliography_path: bibliography_path,
+        output_path: output_path,
+        config_path: config_path,
+        preset_name: nil,
+        emit_tex_path: nil
+      )
+
+      metadata = JPMD.safe_yaml_load(
+        workflow.send(:merged_markdown).match(/\A---\s*\n(.*?)\n---\s*\n\n/m)[1]
+      )
+
+      assert_equal Date.new(2026, 4, 8), metadata.fetch("date")
     end
   end
 

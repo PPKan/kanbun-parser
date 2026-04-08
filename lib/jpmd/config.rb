@@ -181,7 +181,7 @@ module JPMD
 
     def load_yaml_file(path)
       content = File.read(path, mode: "r:utf-8")
-      YAML.safe_load(content, aliases: true) || {}
+      JPMD.safe_yaml_load(content)
     rescue Psych::SyntaxError => e
       raise JPMD::ValidationError, "Invalid YAML in #{path}: #{e.message}"
     end
@@ -191,7 +191,7 @@ module JPMD
       match = content.match(/\A---\s*\r?\n(.*?)\r?\n---\s*(?:\r?\n|$)/m)
       return {} unless match
 
-      YAML.safe_load(match[1], aliases: true) || {}
+      JPMD.safe_yaml_load(match[1])
     rescue Psych::SyntaxError => e
       raise JPMD::ValidationError, "Invalid YAML frontmatter in #{path}: #{e.message}"
     end
