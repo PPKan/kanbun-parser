@@ -8,7 +8,7 @@ class JPMDCompilerTest < Minitest::Test
   def test_resolve_font_setup_uses_exact_font_files_from_linux_directory
     with_temp_markdown do |input_path, config_path|
       Dir.mktmpdir("jpmd-fonts-") do |font_dir|
-        %w[times.ttf timesbd.ttf timesi.ttf timesbi.ttf msmincho.ttc].each do |name|
+        %w[times.ttf timesbd.ttf timesi.ttf timesbi.ttf msmincho.ttc PMingLiU.ttf].each do |name|
           File.write(File.join(font_dir, name), "", mode: "wb")
         end
 
@@ -16,12 +16,34 @@ class JPMDCompilerTest < Minitest::Test
         previous = ENV["JPMD_WINDOWS_FONT_DIR"]
         ENV["JPMD_WINDOWS_FONT_DIR"] = font_dir
 
-        font_setup = compiler.send(:resolve_font_setup)
-        assert_includes font_setup.fetch(:latin), "times.ttf"
-        assert_includes font_setup.fetch(:japanese), "msmincho.ttc"
+        compiler.stub(:pmingliu_altfont_entries, ['Range={"503C},Font={PMingLiU.ttf},Path={/tmp/fonts/},TateFont={PMingLiU.ttf},YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv}']) do
+          font_setup = compiler.send(:resolve_font_setup)
+          assert_includes font_setup.fetch(:latin), "times.ttf"
+          assert_includes font_setup.fetch(:japanese), "msmincho.ttc"
+          assert_includes font_setup.fetch(:japanese), "BoldFeatures={FakeBold=2}"
+          assert_includes font_setup.fetch(:japanese), "AltFont={"
+          assert_includes font_setup.fetch(:japanese), "PMingLiU.ttf"
+          assert_includes font_setup.fetch(:japanese), "Range={\"503C}"
+          assert_includes font_setup.fetch(:japanese), "YokoFeatures={JFM=jlreq}"
+          assert_includes font_setup.fetch(:japanese), "TateFeatures={JFM=jlreqv}"
+        end
       ensure
         ENV["JPMD_WINDOWS_FONT_DIR"] = previous
       end
+    end
+  end
+
+  def test_missing_codepoints_for_fallback_detects_document_characters_not_in_ms_mincho
+    with_temp_markdown("# 値 值 内 內\n") do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+
+      missing = compiler.send(
+        :missing_codepoints_for_fallback,
+        File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "msmincho.ttc"),
+        File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "PMingLiU.ttf")
+      )
+
+      assert_equal [0x503C, 0x5167], missing
     end
   end
 
