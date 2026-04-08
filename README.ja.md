@@ -8,17 +8,20 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 - 送り仮名
 - 返り点
 
-主な用途は二つです。
+主な用途は三つです。
 
 - Markdown で書いた和文学術文書を PDF に組版する
 - 漢文だけをすぐに試し組みする
+- 縦組の訓読試作を線装風の版面で確認する
 
 ## 主な構成
 
 - `bin/jpmd` / `bin/jpmd.cmd`: CLI エントリポイント
 - `jpmd.yml`: 既定レイアウト設定
 - `examples/academic-paper.md`: 論文形式のサンプル
+- `examples/linear-kundoku.md`: 《馬説》を使った縦組訓読試作
 - `examples/minimal-kanbun.md`: 漢文だけを試す最小サンプル
+- `examples/two-file-manuscript.md`: 本文 Markdown と文献ファイルを分ける二ファイル構成のサンプル
 - `examples/scripts/`: Linux / Windows 用サンプルスクリプト
 - `filter.lua`: 漢文注記を TeX に変換する Pandoc フィルタ
 - `templates/preamble.tex.erb`: 組版と漢文注記の TeX テンプレート
@@ -28,13 +31,17 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 
 ## どのサンプルから始めるか
 
-完成した Markdown 文書を持っている場合は `examples/academic-paper.md` を基準にしてください。
+縦組の訓読試作を始めるなら、`examples/linear-kundoku.md` を基準にしてください。
+
+完成した横組文書を持っている場合は、`examples/academic-paper.md` が引き続き yoko の基準サンプルです。
 
 漢文だけを組みたい場合は `examples/minimal-kanbun.md` を使ってください。最小例は漢文記法だけに絞っています。
 
 ```markdown
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
+
+本文と文献データを別ファイルで管理しているなら、`examples/two-file-manuscript.md` と `jpmd build-pair` を使ってください。このワークフローは一時的なラッパーファイルへ文献情報を差し込むだけなので、元の Markdown はそのまま保てます。
 
 ## Linux セットアップ
 
@@ -60,22 +67,25 @@ export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
-ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
+ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
+ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
 ```
 
 想定される出力:
 
 ```text
 Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
-Wrote /path/to/kanbun-parser/out/academic-paper.pdf
+Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 ```
 
 生成されるファイル:
 
 - `out/minimal-kanbun.pdf`: 漢文だけのサンプル PDF
 - `out/minimal-kanbun.tex`: 確認用に出力された TeX
-- `out/academic-paper.pdf`: 論文形式サンプル PDF
-- `out/academic-paper.tex`: 確認用に出力された TeX
+- `out/linear-kundoku.pdf`: 縦組訓読試作 PDF
+- `out/linear-kundoku.tex`: 確認用に出力された TeX
+- `out/two-file-manuscript.pdf`: 二ファイル構成サンプルの PDF
+- `out/two-file-manuscript.tex`: 二ファイル構成サンプルの TeX
 
 サンプルスクリプトも使えます。
 
@@ -111,7 +121,8 @@ cd kanbun-parser
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 .\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
-.\bin\jpmd.cmd build .\examples\academic-paper.md -o .\out\academic-paper.pdf --emit-tex .\out\academic-paper.tex
+.\bin\jpmd.cmd build .\examples\linear-kundoku.md -o .\out\linear-kundoku.pdf --emit-tex .\out\linear-kundoku.tex
+.\bin\jpmd.cmd build-pair .\examples\two-file-manuscript.md .\references\sample-zotero.json -o .\out\two-file-manuscript.pdf --emit-tex .\out\two-file-manuscript.tex
 ```
 
 PowerShell 用サンプルスクリプト:
@@ -148,5 +159,8 @@ out/variation-suite/report.html
 ## 補足
 
 - `out/` は生成物用ディレクトリであり、Git 管理対象ではありません。
+- 主な CLI コマンドは `build` と `build-pair` です。
 - 調整項目は `jpmd.yml` と各 Markdown の `jpmd:` frontmatter で上書きできます。
+- 新しく入った人は、出したい版面に合わせて出力先とプリセットを選べます。PDF の保存先は `-o`、版面の系統は `--preset academic` / `--preset linear` で切り替えます。
+- この枝では組込みプリセット `linear` を追加し、縦組訓読の既定出力として使います。`academic` は横組基準として残しています。
 - 詳細は `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md` を参照してください。

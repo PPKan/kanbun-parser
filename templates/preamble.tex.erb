@@ -2,10 +2,35 @@
 \renewcommand{\jlreqkanjiskip}{<%= kanjiskip %> plus 0.1pt minus 0.1pt}
 <%= latin_font_setup %>
 <%= japanese_font_setup %>
+\newcommand{\jpmdwritingmode}{<%= writing_mode %>}
 
 \usepackage{titlesec}
+<% if writing_mode == "tate" %>
+\titleformat{\section}{\normalfont\bfseries\Large}{}{0pt}{}
+\titlespacing*{\section}{0pt}{2\zw}{1\zw}
+\titleformat{\subsection}{\normalfont\bfseries\large}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{1.5\zw}{0.5\zw}
+\titleformat{\subsubsection}{\normalfont\bfseries\normalsize}{}{0pt}{}
+\titlespacing*{\subsubsection}{0pt}{1\zw}{0.5\zw}
+\titleformat{\paragraph}{\normalfont\bfseries}{}{0pt}{}
+\titlespacing*{\paragraph}{0pt}{0.75\zw}{0.5\zw}
+\titleformat{\subparagraph}{\normalfont}{}{0pt}{}
+\titlespacing*{\subparagraph}{0pt}{0.75\zw}{0.5\zw}
+\pagestyle{empty}
+\setlength{\parindent}{1\zw}
+\setlength{\parskip}{0pt}
+\interfootnotelinepenalty=10000
+<% else %>
 \titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
 \titlespacing*{\section}{0pt}{1\baselineskip}{0pt}
+\titleformat{\subsection}{\normalfont\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{0.9\baselineskip}{0pt}
+\titleformat{\subsubsection}{\normalfont\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{0.75\baselineskip}{0pt}
+\titleformat{\paragraph}{\normalfont\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}{0pt}{0.75\baselineskip}{0.35\baselineskip}
+\titleformat{\subparagraph}{\normalfont}{\thesubparagraph}{1em}{}
+\titlespacing*{\subparagraph}{0pt}{0.75\baselineskip}{0.35\baselineskip}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -38,6 +63,7 @@
   \renewcommand{\footrulewidth}{0pt}
   \fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
 }
+<% end %>
 
 \usepackage{graphicx}
 \usepackage{longtable}
@@ -53,6 +79,24 @@
 \captionsetup[figure]{position=bottom}
 
 \usepackage{luatexja-ruby}
+\newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
+\newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
+\newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
+\ltjsetruby{fontcmd=\kanbunfuriganafont,stretchruby={1}{1}{1},stretch={1}{1}{1},intergap=0}
+<% if writing_mode == "tate" %>
+\newcommand{\jpmdkanbunrubyfont}{\addjfontfeature{YokoFeatures={RawFeature={-pkna,+ruby}},TateFeatures={RawFeature={-pkna,+ruby}}}}
+\usepackage[
+  scale=<%= tate_kanbun_scale %>,
+  unit=1\zw,
+  tateaki=<%= tate_kanbun_tateaki %>,
+  okuriintrusion=<%= tate_kanbun_okuriintrusion %>,
+  rubyfontcmd=\jpmdkanbunrubyfont,
+  <%= tate_kanbun_kumi %>
+]{kanbun}
+\newcommand{\kanbun}[4]{%
+  \kanjiunit{\furiokuri{#2}{#3}}{}{#1}{}{#4}{}%
+}
+<% else %>
 \newsavebox{\kanbunbasebox}
 \newsavebox{\kanbunmainbox}
 \newsavebox{\kanbunfuriganabox}
@@ -60,9 +104,6 @@
 \newsavebox{\kanbunokuribox}
 \newdimen\kanbunmainsideoffset
 \newcommand{\kanbunifempty}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
-\newcommand{\kanbunfuriganafont}{\fontsize{<%= furigana_size %>}{<%= furigana_size %>}\selectfont}
-\newcommand{\kanbunkaeritenfont}{\fontsize{<%= kaeriten_size %>}{<%= kaeriten_size %>}\selectfont}
-\newcommand{\kanbunokuriganafont}{\fontsize{<%= okurigana_size %>}{<%= okurigana_size %>}\selectfont}
 \newcommand{\kanbunsidegap}{<%= side_gap %>}
 \newcommand{\kanbunsideminwidth}{<%= side_min_width %>}
 \newcommand{\kanbunfuriganashiftx}{\dimexpr <%= furigana_right %> - <%= furigana_left %>\relax}
@@ -160,3 +201,4 @@
   }%
   \endgroup
 }
+<% end %>

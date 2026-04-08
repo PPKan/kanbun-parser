@@ -6,10 +6,17 @@ This document is the parameter guide for the CLI build pipeline.
 
 Use one of the sample Markdown files in `examples/`:
 
+- `examples/linear-kundoku.md`: vertical kundoku prototype
 - `examples/academic-paper.md`: full document sample
 - `examples/minimal-kanbun.md`: kanbun-only sample
 
-Main command:
+Default branch prototype command:
+
+```bash
+ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
+```
+
+Horizontal reference command:
 
 ```bash
 ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
@@ -37,11 +44,17 @@ The project builds Markdown to PDF with:
 
 Settings are applied in this order:
 
-1. built-in preset: `academic`
+1. selected built-in preset: `linear` or `academic`
 2. project config: `jpmd.yml`
 3. document frontmatter override: `jpmd:`
 
+In this branch, `jpmd.yml` sets `default_preset: linear`, while `examples/academic-paper.md` pins itself to `academic`.
+
 You can also choose a preset explicitly:
+
+```bash
+ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --preset linear
+```
 
 ```bash
 ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --preset academic
@@ -55,17 +68,18 @@ Add `jpmd:` in a Markdown file when you want a document-local layout change.
 ---
 jpmd:
   layout:
+    writing_mode: tate
     grid:
-      characters_per_line: 28
-      lines_per_page: 32
+      characters_per_line: 24
+      lines_per_page: 11
     font:
-      body_size: 11pt
+      body_size: 14pt
   kanbun:
     furigana:
       size: 8pt
       shift:
-        up: 1pt
-        right: 0pt
+        up: 0pt
+        right: 0.20zw
         down: 0pt
         left: 0pt
 ---
@@ -76,26 +90,28 @@ jpmd:
 If you do not want to edit `jpmd.yml`, create a second config file and pass `--config`.
 
 ```yaml
-default_preset: academic
+default_preset: linear
 
 presets:
-  academic:
+  linear:
     layout:
+      writing_mode: tate
       grid:
         characters_per_line: 20
-        lines_per_page: 25
+        lines_per_page: 10
       font:
-        body_size: 11pt
+        body_size: 13pt
 ```
 
 ```bash
-ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper-test.pdf --emit-tex out/academic-paper-test.tex --config jpmd.test.yml
+ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku-test.pdf --emit-tex out/linear-kundoku-test.tex --config jpmd.test.yml
 ```
 
 ## Adjustable Parameters
 
 Layout settings:
 
+- `layout.writing_mode`
 - `layout.margins.top`
 - `layout.margins.right`
 - `layout.margins.bottom`
@@ -150,6 +166,7 @@ The CLI validates settings before LaTeX runs.
 
 Important checks:
 
+- `writing_mode` must be `yoko` or `tate`
 - `characters_per_line` must be an integer and at least `2`
 - `lines_per_page` must be an integer and at least `1`
 - body size must be positive
@@ -179,7 +196,7 @@ Meaning:
 Fast loop:
 
 ```bash
-ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
+ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
 ```
 
 ## Visual Regression Report
@@ -198,7 +215,7 @@ out/variation-suite/report.html
 
 The suite covers:
 
-- layout variations
+- vertical layout variations
 - baseline kanbun rendering
 - furigana movement
 - kaeriten movement
@@ -206,6 +223,7 @@ The suite covers:
 
 ## Files Worth Editing
 
+- `examples/linear-kundoku.md`
 - `examples/academic-paper.md`
 - `examples/minimal-kanbun.md`
 - `jpmd.yml`

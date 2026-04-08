@@ -16,6 +16,7 @@ entrypoints:
 examples:
   full_document: examples/academic-paper.md
   kanbun_only: examples/minimal-kanbun.md
+  two_file_workflow: examples/two-file-manuscript.md
   linux_script: examples/scripts/build-linux.sh
   windows_script: examples/scripts/build-windows.ps1
 
@@ -64,9 +65,11 @@ verification:
   sample_builds_unix:
     - ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
     - ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
+    - ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
   sample_builds_windows:
     - .\\bin\\jpmd.cmd build .\\examples\\minimal-kanbun.md -o .\\out\\minimal-kanbun.pdf --emit-tex .\\out\\minimal-kanbun.tex
     - .\\bin\\jpmd.cmd build .\\examples\\academic-paper.md -o .\\out\\academic-paper.pdf --emit-tex .\\out\\academic-paper.tex
+    - .\\bin\\jpmd.cmd build-pair .\\examples\\two-file-manuscript.md .\\references\\sample-zotero.json -o .\\out\\two-file-manuscript.pdf --emit-tex .\\out\\two-file-manuscript.tex
   visual_suite:
     - ruby scripts/run_visual_suite.rb
     - report_path: out/variation-suite/report.html
@@ -76,6 +79,7 @@ operating_notes:
   - out/ is generated and gitignored
   - project defaults are in jpmd.yml
   - document overrides are read from jpmd: YAML frontmatter
+  - build-pair injects bibliography metadata into a temporary wrapper and leaves the source files unchanged
   - kanbun syntax is [BASE]{f=\"...\" o=\"...\" k=\"...\"}
   - visual suite cases are defined in test/variation_suite.yml
 

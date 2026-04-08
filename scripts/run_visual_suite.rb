@@ -86,9 +86,9 @@ class VariationSuite
 
   def build_case_config(overrides)
     {
-      "default_preset" => "academic",
+      "default_preset" => "linear",
       "presets" => {
-        "academic" => overrides
+        "linear" => overrides
       }
     }
   end
