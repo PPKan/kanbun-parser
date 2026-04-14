@@ -31,9 +31,9 @@ module JPMD
     MS_MINCHO_FILENAME = "msmincho.ttc"
     PMINGLIU_FILENAME = "PMingLiU.ttf"
 
-    def initialize(input_path:, output_path:, config_path:, preset_name:, emit_tex_path:)
+    def initialize(input_path:, output_path: nil, config_path:, preset_name: nil, emit_tex_path: nil)
       @input_path = File.expand_path(input_path)
-      @output_path = File.expand_path(output_path)
+      @output_path = output_path && File.expand_path(output_path)
       @config_path = File.expand_path(config_path)
       @preset_name = preset_name
       @emit_tex_path = emit_tex_path && File.expand_path(emit_tex_path)
@@ -50,6 +50,8 @@ module JPMD
 
       @settings = resolved.fetch("settings")
       @derived = resolved.fetch("derived")
+      @output_path ||= resolved.fetch("output").fetch("pdf_path")
+      @emit_tex_path ||= resolved.fetch("output").fetch("tex_path")
 
       FileUtils.mkdir_p(File.dirname(@output_path))
       FileUtils.mkdir_p(File.dirname(@emit_tex_path)) if @emit_tex_path
@@ -585,7 +587,11 @@ module JPMD
 
     def document_frontmatter_metadata
       metadata = extract_frontmatter_metadata
-      metadata.is_a?(Hash) ? metadata.reject { |key, _value| key.to_s == "jpmd" } : {}
+      raise JPMD::ValidationError, "YAML frontmatter in #{@input_path} must decode to a mapping" unless metadata.is_a?(Hash)
+
+      normalize_document_metadata_paths(
+        normalize_hash(metadata.reject { |key, _value| key.to_s == "jpmd" })
+      )
     end
 
     def extract_frontmatter_metadata
@@ -596,6 +602,41 @@ module JPMD
       JPMD.safe_yaml_load(match[1])
     rescue Psych::SyntaxError => e
       raise JPMD::ValidationError, "Invalid YAML frontmatter in #{@input_path}: #{e.message}"
+    end
+
+    def normalize_document_metadata_paths(metadata)
+      metadata = metadata.dup
+      metadata["bibliography"] = expand_metadata_path_value(metadata["bibliography"]) if metadata.key?("bibliography")
+      metadata["csl"] = expand_metadata_path_value(metadata["csl"]) if metadata.key?("csl")
+      metadata
+    end
+
+    def expand_metadata_path_value(value)
+      case value
+      when String
+        return value if value.empty?
+
+        expand_document_relative_path(value)
+      when Array
+        value.map do |entry|
+          entry.is_a?(String) && !entry.empty? ? expand_document_relative_path(entry) : entry
+        end
+      else
+        value
+      end
+    end
+
+    def normalize_hash(value)
+      case value
+      when Hash
+        value.each_with_object({}) do |(key, nested_value), hash|
+          hash[key.to_s] = normalize_hash(nested_value)
+        end
+      when Array
+        value.map { |item| normalize_hash(item) }
+      else
+        value
+      end
     end
 
     def tex_path(path)

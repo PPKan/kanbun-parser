@@ -1,6 +1,8 @@
 ---
 jpmd:
   preset: linear
+  output:
+    tex: ../out/linear-kundoku.tex
 ---
 
 \begin{center}

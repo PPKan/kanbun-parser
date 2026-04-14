@@ -39,38 +39,35 @@ class VariationSuite
   def prepare_output_root
     FileUtils.rm_rf(OUTPUT_ROOT) if Dir.exist?(OUTPUT_ROOT)
     FileUtils.mkdir_p(OUTPUT_ROOT)
-    %w[configs pdfs tex pages].each do |dir|
+    %w[inputs pdfs tex pages].each do |dir|
       FileUtils.mkdir_p(File.join(OUTPUT_ROOT, dir))
     end
   end
 
   def run_case(test_case)
     slug = test_case.fetch("slug")
-    config_path = File.join(OUTPUT_ROOT, "configs", "#{slug}.yml")
+    document_path = File.join(OUTPUT_ROOT, "inputs", "#{slug}.md")
     pdf_path = File.join(OUTPUT_ROOT, "pdfs", "#{slug}.pdf")
     tex_path = File.join(OUTPUT_ROOT, "tex", "#{slug}.tex")
     pages_prefix = File.join(OUTPUT_ROOT, "pages", slug)
     input_path = File.expand_path(test_case.fetch("input"), ROOT)
 
-    FileUtils.rm_f(config_path)
+    FileUtils.rm_f(document_path)
     FileUtils.rm_f(pdf_path)
     FileUtils.rm_f(tex_path)
     Dir["#{pages_prefix}-*.png"].each { |path| FileUtils.rm_f(path) }
 
-    config = build_case_config(test_case.fetch("overrides", {}))
-    File.write(config_path, YAML.dump(config), mode: "w:utf-8")
+    File.write(
+      document_path,
+      build_case_markdown(input_path, test_case.fetch("overrides", {}), pdf_path, tex_path),
+      mode: "w:utf-8"
+    )
 
     build_command = [
       ruby_exe,
       File.join(ROOT, "bin", "jpmd"),
       "build",
-      input_path,
-      "-o",
-      pdf_path,
-      "--emit-tex",
-      tex_path,
-      "--config",
-      config_path
+      document_path
     ]
 
     success, output = capture(build_command)
@@ -78,19 +75,30 @@ class VariationSuite
 
     if success
       page_files = render_pdf_pages(pdf_path, pages_prefix)
-      @results << success_result(test_case, config_path, pdf_path, tex_path, page_files, output, expected)
+      @results << success_result(test_case, document_path, pdf_path, tex_path, page_files, output, expected)
     else
-      @results << failure_result(test_case, config_path, output, expected)
+      @results << failure_result(test_case, document_path, output, expected)
     end
   end
 
-  def build_case_config(overrides)
-    {
-      "default_preset" => "linear",
-      "presets" => {
-        "linear" => overrides
-      }
-    }
+  def build_case_markdown(source_path, overrides, pdf_path, tex_path)
+    metadata, body = split_frontmatter(File.read(source_path, mode: "r:utf-8").sub(/\A\uFEFF/, ""))
+    metadata = stringify_keys(metadata)
+    jpmd = metadata["jpmd"] || {}
+    raise "jpmd frontmatter in #{source_path} must decode to a mapping" unless jpmd.is_a?(Hash)
+
+    metadata["jpmd"] = deep_merge(
+      jpmd,
+      stringify_keys(overrides).merge(
+        "output" => {
+          "pdf" => pdf_path,
+          "tex" => tex_path
+        }
+      )
+    )
+
+    frontmatter = YAML.dump(metadata).sub(/\A---\n/, "")
+    +"---\n#{frontmatter}---\n\n#{body}"
   end
 
   def render_pdf_pages(pdf_path, pages_prefix)
@@ -109,7 +117,7 @@ class VariationSuite
     Dir["#{pages_prefix}-*.png"].sort
   end
 
-  def success_result(test_case, config_path, pdf_path, tex_path, page_files, output, expected)
+  def success_result(test_case, document_path, pdf_path, tex_path, page_files, output, expected)
     {
       "slug" => test_case.fetch("slug"),
       "label" => test_case.fetch("label"),
@@ -117,7 +125,7 @@ class VariationSuite
       "focus" => test_case.fetch("focus"),
       "expected" => expected,
       "status" => expected == "success" ? "PASS" : "UNEXPECTED PASS",
-      "config_path" => config_path,
+      "document_path" => document_path,
       "pdf_path" => pdf_path,
       "tex_path" => tex_path,
       "page_files" => page_files,
@@ -127,7 +135,7 @@ class VariationSuite
     }
   end
 
-  def failure_result(test_case, config_path, output, expected)
+  def failure_result(test_case, document_path, output, expected)
     {
       "slug" => test_case.fetch("slug"),
       "label" => test_case.fetch("label"),
@@ -135,7 +143,7 @@ class VariationSuite
       "focus" => test_case.fetch("focus"),
       "expected" => expected,
       "status" => expected == "failure" ? "PASS" : "FAIL",
-      "config_path" => config_path,
+      "document_path" => document_path,
       "output" => output.strip,
       "overrides" => test_case.fetch("overrides", {})
     }
@@ -159,7 +167,7 @@ class VariationSuite
       lines << "- Focus: #{result.fetch("focus")}"
       lines << "- Input: `#{result.fetch("input")}`"
       lines << "- Expected: `#{result.fetch("expected")}`"
-      lines << "- Config: `#{relative_to_root(result.fetch("config_path"))}`"
+      lines << "- Generated Markdown: `#{relative_to_root(result.fetch("document_path"))}`"
 
       if result["pdf_path"]
         lines << "- PDF: `#{relative_to_root(result.fetch("pdf_path"))}`"
@@ -212,7 +220,7 @@ class VariationSuite
             <li><strong>Focus:</strong> #{html_escape(result.fetch("focus"))}</li>
             <li><strong>Input:</strong> <code>#{html_escape(result.fetch("input"))}</code></li>
             <li><strong>Expected:</strong> <code>#{html_escape(result.fetch("expected"))}</code></li>
-            <li><strong>Config:</strong> <code>#{html_escape(relative_to_root(result.fetch("config_path")))}</code></li>
+            <li><strong>Generated Markdown:</strong> <code>#{html_escape(relative_to_root(result.fetch("document_path")))}</code></li>
             #{html_output_paths(result)}
           </ul>
           <h3>Overrides</h3>
@@ -270,6 +278,44 @@ class VariationSuite
   def capture(command)
     stdout, stderr, status = Open3.capture3(*command, chdir: ROOT)
     [status.success?, [stdout, stderr].reject(&:empty?).join("\n")]
+  end
+
+  def split_frontmatter(content)
+    match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
+    return [{}, content] unless match
+
+    metadata = YAML.safe_load(match[1], aliases: true) || {}
+    raise "YAML frontmatter must decode to a mapping" unless metadata.is_a?(Hash)
+
+    [metadata, content[match[0].length..] || ""]
+  end
+
+  def stringify_keys(value)
+    case value
+    when Hash
+      value.each_with_object({}) do |(key, nested_value), result|
+        result[key.to_s] = stringify_keys(nested_value)
+      end
+    when Array
+      value.map { |item| stringify_keys(item) }
+    else
+      value
+    end
+  end
+
+  def deep_merge(base, override)
+    merged = stringify_keys(base)
+
+    stringify_keys(override).each do |key, value|
+      merged[key] =
+        if merged[key].is_a?(Hash) && value.is_a?(Hash)
+          deep_merge(merged[key], value)
+        else
+          value
+        end
+    end
+
+    merged
   end
 
   def ruby_exe

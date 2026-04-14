@@ -9,14 +9,15 @@ class JPMDConfigTest < Minitest::Test
     with_temp_markdown do |input_path, config_path|
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: nil
+        config_path: config_path
       ).resolve
 
       derived = resolved.fetch("derived")
       assert_equal 30, derived.fetch("characters_per_line")
       assert_equal 30, derived.fetch("lines_per_page")
       assert_equal "12pt", derived.fetch("body_size")
+      assert_equal File.join(File.dirname(config_path), "out", "sample.pdf"), resolved.fetch("output").fetch("pdf_path")
+      assert_nil resolved.fetch("output").fetch("tex_path")
       assert_operator derived.fetch("kanjiskip_pt"), :>, 0
       assert_operator derived.fetch("baselineskip_pt"), :>, 0
     end
@@ -38,8 +39,7 @@ class JPMDConfigTest < Minitest::Test
     with_temp_markdown(frontmatter) do |input_path, config_path|
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: nil
+        config_path: config_path
       ).resolve
 
       derived = resolved.fetch("derived")
@@ -64,8 +64,7 @@ class JPMDConfigTest < Minitest::Test
       error = assert_raises(JPMD::ValidationError) do
         JPMD::Config.new(
           input_path: input_path,
-          config_path: config_path,
-          cli_preset: nil
+          config_path: config_path
         ).resolve
       end
 
@@ -86,8 +85,7 @@ class JPMDConfigTest < Minitest::Test
       error = assert_raises(JPMD::ValidationError) do
         JPMD::Config.new(
           input_path: input_path,
-          config_path: config_path,
-          cli_preset: nil
+          config_path: config_path
         ).resolve
       end
 
@@ -108,20 +106,47 @@ class JPMDConfigTest < Minitest::Test
 
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: nil
+        config_path: config_path
       ).resolve
 
       assert_equal "11pt", resolved.fetch("derived").fetch("body_size")
     end
   end
 
-  def test_linear_preset_uses_tate_writing_mode_and_swapped_page_axes
-    with_temp_markdown do |input_path, config_path|
+  def test_document_output_paths_are_resolved_relative_to_document
+    Dir.mktmpdir("jpmd-config-") do |dir|
+      docs_dir = File.join(dir, "docs")
+      FileUtils.mkdir_p(docs_dir)
+      input_path = File.join(docs_dir, "sample.md")
+      config_path = File.join(dir, "jpmd.yml")
+
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        jpmd:
+          output:
+            pdf: builds/sample.pdf
+            tex: builds/sample.tex
+        ---
+
+        本文
+      MARKDOWN
+
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: "linear"
+        config_path: config_path
+      ).resolve
+
+      assert_equal File.join(docs_dir, "builds", "sample.pdf"), resolved.fetch("output").fetch("pdf_path")
+      assert_equal File.join(docs_dir, "builds", "sample.tex"), resolved.fetch("output").fetch("tex_path")
+    end
+  end
+
+  def test_linear_preset_uses_tate_writing_mode_and_swapped_page_axes
+    with_temp_markdown({ "preset" => "linear" }) do |input_path, config_path|
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
       ).resolve
 
       derived = resolved.fetch("derived")

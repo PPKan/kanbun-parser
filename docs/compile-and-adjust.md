@@ -1,72 +1,65 @@
 # Compile And Adjust Output
 
-This document is the parameter guide for the CLI build pipeline.
+This document is the YAML-frontmatter guide for the build pipeline.
 
-## Build Inputs
+## Build Command
 
-Use one of the sample Markdown files in `examples/`:
-
-- `examples/linear-kundoku.md`: vertical kundoku prototype
-- `examples/academic-paper.md`: full document sample
-- `examples/minimal-kanbun.md`: kanbun-only sample
-
-Default branch prototype command:
+Run builds from the repo root:
 
 ```bash
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
+ruby bin/jpmd build examples/minimal-kanbun.md
+ruby bin/jpmd build examples/linear-kundoku.md
+ruby bin/jpmd build examples/academic-paper.md
 ```
 
-Horizontal reference command:
+The CLI now needs only the input Markdown path. PDF output defaults to `out/<input-basename>.pdf`.
 
-```bash
-ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
-```
-
-Minimal kanbun command:
-
-```bash
-ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
-```
-
-## Build Stack
-
-The project builds Markdown to PDF with:
-
-- `Pandoc`
-- `LuaLaTeX`
-- `jlreq`
-- `filter.lua`
-- `template.tex`
-- `templates/preamble.tex.erb`
-- `jpmd.yml`
-
-## Configuration Order
+## Configuration Sources
 
 Settings are applied in this order:
 
-1. selected built-in preset: `linear` or `academic`
-2. project config: `jpmd.yml`
-3. document frontmatter override: `jpmd:`
+1. built-in preset: `linear` or `academic`
+2. optional project config: `jpmd.yml`
+3. document-local override: `jpmd:` frontmatter
 
-In this branch, `jpmd.yml` sets `default_preset: linear`, while `examples/academic-paper.md` pins itself to `academic`.
+`jpmd.yml` is optional. A document with no `jpmd:` block still builds with defaults.
 
-You can also choose a preset explicitly:
+## Frontmatter Layout
 
-```bash
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --preset linear
+Keep standard Pandoc metadata at the top level, and keep JPMD settings under `jpmd:`.
+
+```yaml
+---
+title: Sample Title
+bibliography: ../references/sample-zotero.json
+csl: ../references/word-japanese-note.csl
+jpmd:
+  preset: academic
+  output:
+    tex: ../out/sample.tex
+  layout:
+    grid:
+      characters_per_line: 30
+      lines_per_page: 30
+---
 ```
 
-```bash
-ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --preset academic
-```
+Rules:
+
+- `bibliography:` and `csl:` stay at the top level.
+- `jpmd.preset` selects `linear` or `academic`.
+- `jpmd.output.pdf` is optional. If omitted, JPMD writes `out/<input-basename>.pdf` from the repo root.
+- `jpmd.output.tex` is optional. If omitted, no TeX file is emitted.
+- Relative paths in `bibliography`, `csl`, and `jpmd.output.*` are resolved relative to the Markdown file.
 
 ## Per-Document Overrides
 
-Add `jpmd:` in a Markdown file when you want a document-local layout change.
+Use `jpmd:` when you need document-local layout or kanbun adjustments.
 
 ```yaml
 ---
 jpmd:
+  preset: linear
   layout:
     writing_mode: tate
     grid:
@@ -83,28 +76,6 @@ jpmd:
         down: 0pt
         left: 0pt
 ---
-```
-
-## Temporary Project Override File
-
-If you do not want to edit `jpmd.yml`, create a second config file and pass `--config`.
-
-```yaml
-default_preset: linear
-
-presets:
-  linear:
-    layout:
-      writing_mode: tate
-      grid:
-        characters_per_line: 20
-        lines_per_page: 10
-      font:
-        body_size: 13pt
-```
-
-```bash
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku-test.pdf --emit-tex out/linear-kundoku-test.tex --config jpmd.test.yml
 ```
 
 ## Adjustable Parameters
@@ -162,7 +133,7 @@ Kanbun annotation units also allow:
 
 ## Validation
 
-The CLI validates settings before LaTeX runs.
+The build validates settings before LuaLaTeX runs.
 
 Important checks:
 
@@ -188,16 +159,10 @@ Meaning:
 
 ## Recommended Adjustment Loop
 
-1. Change one parameter.
-2. Rebuild with `--emit-tex`.
+1. Change one frontmatter value.
+2. Rebuild with `ruby bin/jpmd build path/to/document.md`.
 3. Inspect the PDF.
-4. If needed, inspect the emitted TeX.
-
-Fast loop:
-
-```bash
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
-```
+4. If needed, set `jpmd.output.tex` and inspect the emitted TeX.
 
 ## Visual Regression Report
 

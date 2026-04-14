@@ -21,7 +21,7 @@ It is meant for three common workflows:
 - `examples/academic-paper.md`: full sample paper
 - `examples/linear-kundoku.md`: vertical kundoku prototype based on 《馬説》
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
-- `examples/two-file-manuscript.md`: sample manuscript for the split Markdown + bibliography workflow
+- `examples/two-file-manuscript.md`: sample manuscript with frontmatter-driven citation metadata
 - `examples/scripts/`: sample build scripts for Linux and Windows
 - `filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
 - `templates/preamble.tex.erb`: layout and kanbun TeX template
@@ -43,9 +43,9 @@ If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. Tha
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-If you are new to the repo, treat those examples as starting points rather than fixed output rules. Choose the sample, output path, and layout settings that match the PDF you actually want to produce.
+If you are new to the repo, treat those examples as starting points rather than fixed output rules. Choose the sample and then adjust `jpmd:` frontmatter for preset, layout, kanbun spacing, and optional TeX emission.
 
-If your manuscript and bibliography live in separate files, start from `examples/two-file-manuscript.md` and use `jpmd build-pair`. That workflow injects the bibliography and CSL metadata into a temporary wrapper, so your source Markdown stays clean.
+If your manuscript needs citations, put `bibliography:` and optional `csl:` directly in the Markdown frontmatter. `examples/two-file-manuscript.md` shows the single-file citation workflow.
 
 ## Linux Setup
 
@@ -95,9 +95,9 @@ ruby -Itest test/jpmd_compiler_test.rb
 ### 6. Build the samples
 
 ```bash
-ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
-ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
+ruby bin/jpmd build examples/minimal-kanbun.md
+ruby bin/jpmd build examples/linear-kundoku.md
+ruby bin/jpmd build examples/two-file-manuscript.md
 ```
 
 Expected output:
@@ -113,7 +113,7 @@ Generated files:
 - `out/minimal-kanbun.tex`: emitted TeX for inspection
 - `out/linear-kundoku.pdf`: compiled vertical kundoku prototype
 - `out/linear-kundoku.tex`: emitted TeX for inspection
-- `out/two-file-manuscript.pdf`: compiled split-input workflow sample
+- `out/two-file-manuscript.pdf`: compiled citation-enabled manuscript sample
 - `out/two-file-manuscript.tex`: emitted TeX for inspection
 
 You can also run the sample Linux script:
@@ -156,9 +156,9 @@ ruby -Itest test/jpmd_compiler_test.rb
 ### 3. Build the samples
 
 ```powershell
-.\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
-.\bin\jpmd.cmd build .\examples\linear-kundoku.md -o .\out\linear-kundoku.pdf --emit-tex .\out\linear-kundoku.tex
-.\bin\jpmd.cmd build-pair .\examples\two-file-manuscript.md .\references\sample-zotero.json -o .\out\two-file-manuscript.pdf --emit-tex .\out\two-file-manuscript.tex
+.\bin\jpmd.cmd build .\examples\minimal-kanbun.md
+.\bin\jpmd.cmd build .\examples\linear-kundoku.md
+.\bin\jpmd.cmd build .\examples\two-file-manuscript.md
 ```
 
 You can also run the sample Windows script:
@@ -209,9 +209,9 @@ The preview below comes from the academic paper sample rendered with the current
 ## Notes
 
 - `out/` is intentionally ignored and should be treated as generated workspace output.
-- The main supported CLI commands are `build` and `build-pair`.
+- The main supported CLI command is `build`.
 - Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
-- Newcomers can choose the output path and preset that fit the document they want. `-o` controls where the PDF lands, and `--preset academic` / `--preset linear` control the layout family.
+- `jpmd build INPUT.md` needs no runtime flags. PDF output defaults to `out/<input-basename>.pdf`, while `jpmd.output.tex` can emit TeX for inspection.
 - The branch prototype adds a built-in `linear` preset for vertical kundoku output while keeping `academic` as the horizontal reference preset.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 

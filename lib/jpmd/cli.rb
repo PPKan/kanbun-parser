@@ -4,6 +4,11 @@ require "optparse"
 
 module JPMD
   class CLI
+    BUILD_PAIR_RETIREMENT_MESSAGE = <<~TEXT.freeze
+      `build-pair` has been retired.
+      Move `bibliography:` and optional `csl:` into the Markdown frontmatter, then run `jpmd build INPUT.md`.
+    TEXT
+
     def self.start(argv)
       new(argv).run
     end
@@ -22,7 +27,7 @@ module JPMD
       when "build"
         build_command
       when "build-pair"
-        build_pair_command
+        raise JPMD::ValidationError, BUILD_PAIR_RETIREMENT_MESSAGE.chomp
       else
         warn "Unknown command: #{command}"
         warn root_usage
@@ -36,13 +41,8 @@ module JPMD
     private
 
     def build_command
-      options = {
-        config_path: File.expand_path("jpmd.yml", Dir.pwd)
-      }
-
       parser = OptionParser.new do |opts|
-        opts.banner = "Usage: jpmd build INPUT.md -o OUTPUT.pdf [options]"
-        add_shared_build_options(opts, options)
+        opts.banner = "Usage: jpmd build INPUT.md"
 
         opts.on("-h", "--help", "Show this help") do
           puts opts
@@ -53,15 +53,11 @@ module JPMD
       remaining = parser.parse(@argv)
       input_path = remaining.first
 
-      raise JPMD::ValidationError, parser.to_s unless input_path
-      raise JPMD::ValidationError, "Missing required -o/--output PATH" unless options[:output_path]
+      raise JPMD::ValidationError, parser.to_s unless input_path && remaining.length == 1
 
       compiler = JPMD::Compiler.new(
         input_path: File.expand_path(input_path, Dir.pwd),
-        output_path: options[:output_path],
-        config_path: options[:config_path],
-        preset_name: options[:preset_name],
-        emit_tex_path: options[:emit_tex_path]
+        config_path: default_config_path
       )
 
       pdf_path = compiler.build
@@ -69,75 +65,14 @@ module JPMD
       0
     end
 
-    def build_pair_command
-      options = {
-        config_path: File.expand_path("jpmd.yml", Dir.pwd),
-        preset_name: JPMD::TwoFileWorkflow::DEFAULT_PRESET_NAME,
-        csl_path: JPMD::TwoFileWorkflow::DEFAULT_CSL_PATH
-      }
-
-      parser = OptionParser.new do |opts|
-        opts.banner = "Usage: jpmd build-pair INPUT.md REFERENCES.json -o OUTPUT.pdf [options]"
-        add_shared_build_options(opts, options)
-
-        opts.on("--csl PATH", "Use CSL style PATH for citations") do |value|
-          options[:csl_path] = File.expand_path(value, Dir.pwd)
-        end
-
-        opts.on("--no-csl", "Skip CSL injection and rely on bibliography data only") do
-          options[:csl_path] = nil
-        end
-
-        opts.on("-h", "--help", "Show this help") do
-          puts opts
-          return 0
-        end
-      end
-
-      remaining = parser.parse(@argv)
-      input_path = remaining[0]
-      bibliography_path = remaining[1]
-
-      raise JPMD::ValidationError, parser.to_s unless input_path && bibliography_path
-      raise JPMD::ValidationError, "Missing required -o/--output PATH" unless options[:output_path]
-
-      pdf_path = JPMD::TwoFileWorkflow.new(
-        markdown_path: File.expand_path(input_path, Dir.pwd),
-        bibliography_path: File.expand_path(bibliography_path, Dir.pwd),
-        output_path: options[:output_path],
-        config_path: options[:config_path],
-        preset_name: options[:preset_name],
-        emit_tex_path: options[:emit_tex_path],
-        csl_path: options[:csl_path]
-      ).build
-
-      puts "Wrote #{pdf_path}"
-      0
-    end
-
-    def add_shared_build_options(opts, options)
-      opts.on("-o", "--output PATH", "Write PDF to PATH") do |value|
-        options[:output_path] = File.expand_path(value, Dir.pwd)
-      end
-
-      opts.on("--config PATH", "Read project config from PATH") do |value|
-        options[:config_path] = File.expand_path(value, Dir.pwd)
-      end
-
-      opts.on("--preset NAME", "Use preset NAME as the base preset") do |value|
-        options[:preset_name] = value
-      end
-
-      opts.on("--emit-tex PATH", "Also write rendered TeX to PATH") do |value|
-        options[:emit_tex_path] = File.expand_path(value, Dir.pwd)
-      end
+    def default_config_path
+      File.expand_path("jpmd.yml", Dir.pwd)
     end
 
     def root_usage
       <<~TEXT
         Usage:
-          jpmd build INPUT.md -o OUTPUT.pdf [--config jpmd.yml] [--preset academic] [--emit-tex out.tex]
-          jpmd build-pair INPUT.md REFERENCES.json -o OUTPUT.pdf [--config jpmd.yml] [--preset academic] [--emit-tex out.tex]
+          jpmd build INPUT.md
       TEXT
     end
   end

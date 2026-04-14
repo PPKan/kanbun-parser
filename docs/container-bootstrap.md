@@ -48,7 +48,7 @@ tar -xzf install-tl-2025.tar.gz -C /tmp/install-tl-2025 --strip-components=1
 cd /root/kanbun-parser
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
-LUALATEX_PATH=/root/texlive/2025/bin/x86_64-linux/lualatex ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
+LUALATEX_PATH=/root/texlive/2025/bin/x86_64-linux/lualatex ruby bin/jpmd build examples/academic-paper.md
 pdfinfo out/academic-paper.pdf
 pdffonts out/academic-paper.pdf
 ```

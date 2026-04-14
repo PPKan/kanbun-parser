@@ -1,6 +1,8 @@
 ---
 jpmd:
   preset: linear
+  output:
+    tex: ../out/minimal-kanbun.tex
 ---
 
 # 漢文最小例

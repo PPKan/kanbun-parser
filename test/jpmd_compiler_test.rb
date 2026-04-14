@@ -67,19 +67,15 @@ class JPMDCompilerTest < Minitest::Test
   end
 
   def test_render_template_adds_tate_class_option_for_linear_preset
-    with_temp_markdown do |input_path, config_path|
+    with_temp_markdown({ "preset" => "linear" }) do |input_path, config_path|
       compiler = JPMD::Compiler.new(
         input_path: input_path,
-        output_path: File.join(File.dirname(input_path), "out.pdf"),
-        config_path: config_path,
-        preset_name: "linear",
-        emit_tex_path: nil
+        config_path: config_path
       )
 
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: "linear"
+        config_path: config_path
       ).resolve
       compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
@@ -91,19 +87,15 @@ class JPMDCompilerTest < Minitest::Test
   end
 
   def test_render_metadata_exposes_tate_writing_mode_for_filter
-    with_temp_markdown do |input_path, config_path|
+    with_temp_markdown({ "preset" => "linear" }) do |input_path, config_path|
       compiler = JPMD::Compiler.new(
         input_path: input_path,
-        output_path: File.join(File.dirname(input_path), "out.pdf"),
-        config_path: config_path,
-        preset_name: "linear",
-        emit_tex_path: nil
+        config_path: config_path
       )
 
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: "linear"
+        config_path: config_path
       ).resolve
       compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
@@ -205,8 +197,7 @@ class JPMDCompilerTest < Minitest::Test
       compiler = compiler_for(input_path, config_path)
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: nil
+        config_path: config_path
       ).resolve
       compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
@@ -216,8 +207,8 @@ class JPMDCompilerTest < Minitest::Test
       assert_equal "Sample Subtitle", metadata["subtitle"]
       assert_equal ["Sample Author"], metadata["author"]
       assert_equal ["Department", "sample@example.jp"], metadata["institute"]
-      assert_equal "refs.json", metadata["bibliography"]
-      assert_equal "refs.csl", metadata["csl"]
+      assert_equal File.join(dir, "refs.json"), metadata["bibliography"]
+      assert_equal File.join(dir, "refs.csl"), metadata["csl"]
       assert_equal true, metadata["suppress-bibliography"]
       assert_equal ["\\foo", "\\input{/tmp/preamble.tex}"], metadata["header-includes"]
       refute_includes metadata.keys, "jpmd"
@@ -227,14 +218,11 @@ class JPMDCompilerTest < Minitest::Test
   def test_build_copies_pdf_to_transfer_directory
     with_temp_markdown do |input_path, config_path|
       Dir.mktmpdir("jpmd-transfer-") do |dir|
-        output_path = File.join(dir, "result.pdf")
+        output_path = File.join(File.dirname(config_path), "out", "sample.pdf")
         transfer_dir = File.join(dir, "transfer")
         compiler = JPMD::Compiler.new(
           input_path: input_path,
-          output_path: output_path,
-          config_path: config_path,
-          preset_name: nil,
-          emit_tex_path: nil
+          config_path: config_path
         )
 
         compiler.stub(:render_template, "template") do
@@ -257,7 +245,7 @@ class JPMDCompilerTest < Minitest::Test
         end
 
         assert_equal "pdf", File.binread(output_path)
-        assert_equal "pdf", File.binread(File.join(transfer_dir, "result.pdf"))
+        assert_equal "pdf", File.binread(File.join(transfer_dir, "sample.pdf"))
       end
     end
   end
@@ -282,19 +270,15 @@ class JPMDCompilerTest < Minitest::Test
   end
 
   def test_render_preamble_loads_kanbun_package_for_tate_mode
-    with_temp_markdown do |input_path, config_path|
+    with_temp_markdown({ "preset" => "linear" }) do |input_path, config_path|
       compiler = JPMD::Compiler.new(
         input_path: input_path,
-        output_path: File.join(File.dirname(input_path), "out.pdf"),
-        config_path: config_path,
-        preset_name: "linear",
-        emit_tex_path: nil
+        config_path: config_path
       )
 
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: "linear"
+        config_path: config_path
       ).resolve
       compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
@@ -313,16 +297,12 @@ class JPMDCompilerTest < Minitest::Test
     with_temp_markdown do |input_path, config_path|
       compiler = JPMD::Compiler.new(
         input_path: input_path,
-        output_path: File.join(File.dirname(input_path), "out.pdf"),
-        config_path: config_path,
-        preset_name: "academic",
-        emit_tex_path: nil
+        config_path: config_path
       )
 
       resolved = JPMD::Config.new(
         input_path: input_path,
-        config_path: config_path,
-        cli_preset: "academic"
+        config_path: config_path
       ).resolve
       compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
@@ -342,10 +322,7 @@ class JPMDCompilerTest < Minitest::Test
   def compiler_for(input_path, config_path)
     JPMD::Compiler.new(
       input_path: input_path,
-      output_path: File.join(File.dirname(input_path), "out.pdf"),
-      config_path: config_path,
-      preset_name: nil,
-      emit_tex_path: nil
+      config_path: config_path
     )
   end
 end

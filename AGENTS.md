@@ -16,7 +16,7 @@ entrypoints:
 examples:
   full_document: examples/academic-paper.md
   kanbun_only: examples/minimal-kanbun.md
-  two_file_workflow: examples/two-file-manuscript.md
+  citation_document: examples/two-file-manuscript.md
   linux_script: examples/scripts/build-linux.sh
   windows_script: examples/scripts/build-windows.ps1
 
@@ -62,14 +62,15 @@ verification:
   tests:
     - ruby -Itest test/jpmd_config_test.rb
     - ruby -Itest test/jpmd_compiler_test.rb
+    - ruby -Itest test/jpmd_cli_test.rb
   sample_builds_unix:
-    - ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
-    - ruby bin/jpmd build examples/academic-paper.md -o out/academic-paper.pdf --emit-tex out/academic-paper.tex
-    - ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
+    - ruby bin/jpmd build examples/minimal-kanbun.md
+    - ruby bin/jpmd build examples/academic-paper.md
+    - ruby bin/jpmd build examples/two-file-manuscript.md
   sample_builds_windows:
-    - .\\bin\\jpmd.cmd build .\\examples\\minimal-kanbun.md -o .\\out\\minimal-kanbun.pdf --emit-tex .\\out\\minimal-kanbun.tex
-    - .\\bin\\jpmd.cmd build .\\examples\\academic-paper.md -o .\\out\\academic-paper.pdf --emit-tex .\\out\\academic-paper.tex
-    - .\\bin\\jpmd.cmd build-pair .\\examples\\two-file-manuscript.md .\\references\\sample-zotero.json -o .\\out\\two-file-manuscript.pdf --emit-tex .\\out\\two-file-manuscript.tex
+    - .\\bin\\jpmd.cmd build .\\examples\\minimal-kanbun.md
+    - .\\bin\\jpmd.cmd build .\\examples\\academic-paper.md
+    - .\\bin\\jpmd.cmd build .\\examples\\two-file-manuscript.md
   visual_suite:
     - ruby scripts/run_visual_suite.rb
     - report_path: out/variation-suite/report.html
@@ -79,7 +80,9 @@ operating_notes:
   - out/ is generated and gitignored
   - project defaults are in jpmd.yml
   - document overrides are read from jpmd: YAML frontmatter
-  - build-pair injects bibliography metadata into a temporary wrapper and leaves the source files unchanged
+  - bibliography and csl metadata are read from top-level Markdown frontmatter
+  - default PDF output is out/<input-basename>.pdf unless jpmd.output.pdf overrides it
+  - TeX is emitted only when jpmd.output.tex is set in frontmatter
   - kanbun syntax is [BASE]{f=\"...\" o=\"...\" k=\"...\"}
   - visual suite cases are defined in test/variation_suite.yml
 
@@ -88,5 +91,5 @@ failure_triage:
   missing_lualatex: set LUALATEX_PATH or install TeX Live 2025
   missing_fonts_linux: verify vendor/fonts or font env vars
   missing_fonts_windows: install Times New Roman and MS Mincho
-  latex_failure: inspect emitted tex with --emit-tex and rerun
+  latex_failure: set jpmd.output.tex in frontmatter, inspect the emitted tex, and rerun
 ```

@@ -16,5 +16,4 @@ end
 
 require_relative "jpmd/config"
 require_relative "jpmd/compiler"
-require_relative "jpmd/two_file_workflow"
 require_relative "jpmd/cli"

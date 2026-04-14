@@ -131,7 +131,7 @@ module JPMD
     GENERIC_DIMENSION_PATTERN = /\A(0|[0-9]+(?:\.[0-9]+)?)(pt|mm|cm|in|bp|dd|cc|sp|ex|em|zw|zh)\z/
     WRITING_MODES = %w[yoko tate].freeze
 
-    def initialize(input_path:, config_path:, cli_preset:)
+    def initialize(input_path:, config_path:, cli_preset: nil)
       @input_path = input_path
       @config_path = config_path
       @cli_preset = cli_preset
@@ -140,6 +140,8 @@ module JPMD
     def resolve
       project_config = load_project_config
       document_config = load_document_config
+
+      output = resolve_output_settings(document_config.delete("output"))
 
       preset_name = @cli_preset ||
         string_or_nil(document_config.delete("preset")) ||
@@ -157,7 +159,8 @@ module JPMD
         "preset_name" => preset_name,
         "project_root" => project_root,
         "settings" => merged,
-        "derived" => validate_and_derive(merged)
+        "derived" => validate_and_derive(merged),
+        "output" => output
       }
     end
 
@@ -176,7 +179,14 @@ module JPMD
 
     def load_document_config
       metadata = extract_frontmatter(@input_path)
-      normalize_hash(metadata.fetch("jpmd", {}))
+      raise JPMD::ValidationError, "YAML frontmatter in #{@input_path} must decode to a mapping" unless metadata.is_a?(Hash)
+
+      jpmd_metadata = metadata.fetch("jpmd", {})
+      return {} if jpmd_metadata.nil?
+
+      raise JPMD::ValidationError, "jpmd frontmatter in #{@input_path} must decode to a mapping" unless jpmd_metadata.is_a?(Hash)
+
+      normalize_hash(jpmd_metadata)
     end
 
     def load_yaml_file(path)
@@ -188,12 +198,35 @@ module JPMD
 
     def extract_frontmatter(path)
       content = File.read(path, mode: "r:utf-8").sub(/\A\uFEFF/, "")
-      match = content.match(/\A---\s*\r?\n(.*?)\r?\n---\s*(?:\r?\n|$)/m)
+      match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
       return {} unless match
 
       JPMD.safe_yaml_load(match[1])
     rescue Psych::SyntaxError => e
       raise JPMD::ValidationError, "Invalid YAML frontmatter in #{path}: #{e.message}"
+    end
+
+    def resolve_output_settings(value)
+      output = value || {}
+      raise JPMD::ValidationError, "jpmd.output must be a map" unless output.is_a?(Hash)
+
+      output = normalize_hash(output)
+
+      {
+        "pdf_path" => resolve_output_path(output["pdf"]) || default_pdf_output_path,
+        "tex_path" => resolve_output_path(output["tex"])
+      }
+    end
+
+    def resolve_output_path(value)
+      return nil if value.nil?
+
+      path = required_string(value, "jpmd.output path")
+      File.expand_path(path, File.dirname(@input_path))
+    end
+
+    def default_pdf_output_path
+      File.join(project_root, "out", "#{File.basename(@input_path, File.extname(@input_path))}.pdf")
     end
 
     def validate_and_derive(settings)
@@ -360,9 +393,15 @@ module JPMD
       value.nil? ? nil : value.to_s
     end
 
+    def required_string(value, path)
+      raise JPMD::ValidationError, "#{path} must be a string" unless value.is_a?(String)
+      raise JPMD::ValidationError, "#{path} must not be empty" if value.strip.empty?
+
+      value
+    end
+
     def project_root
-      base = File.file?(@config_path) ? File.dirname(@config_path) : File.dirname(@input_path)
-      File.expand_path(base)
+      File.expand_path(File.dirname(@config_path))
     end
   end
 end

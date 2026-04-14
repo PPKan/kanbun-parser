@@ -21,7 +21,7 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 - `examples/academic-paper.md`: 論文形式のサンプル
 - `examples/linear-kundoku.md`: 《馬説》を使った縦組訓読試作
 - `examples/minimal-kanbun.md`: 漢文だけを試す最小サンプル
-- `examples/two-file-manuscript.md`: 本文 Markdown と文献ファイルを分ける二ファイル構成のサンプル
+- `examples/two-file-manuscript.md`: frontmatter で参考文献を渡すサンプル
 - `examples/scripts/`: Linux / Windows 用サンプルスクリプト
 - `filter.lua`: 漢文注記を TeX に変換する Pandoc フィルタ
 - `templates/preamble.tex.erb`: 組版と漢文注記の TeX テンプレート
@@ -41,7 +41,7 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-本文と文献データを別ファイルで管理しているなら、`examples/two-file-manuscript.md` と `jpmd build-pair` を使ってください。このワークフローは一時的なラッパーファイルへ文献情報を差し込むだけなので、元の Markdown はそのまま保てます。
+文献を使う場合は、`bibliography:` と必要なら `csl:` を Markdown frontmatter に直接書いてください。`examples/two-file-manuscript.md` は単一ファイルで完結する参考文献付き原稿の例です。
 
 ## Linux セットアップ
 
@@ -66,9 +66,9 @@ cd kanbun-parser
 export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
-ruby bin/jpmd build examples/minimal-kanbun.md -o out/minimal-kanbun.pdf --emit-tex out/minimal-kanbun.tex
-ruby bin/jpmd build examples/linear-kundoku.md -o out/linear-kundoku.pdf --emit-tex out/linear-kundoku.tex
-ruby bin/jpmd build-pair examples/two-file-manuscript.md references/sample-zotero.json -o out/two-file-manuscript.pdf --emit-tex out/two-file-manuscript.tex
+ruby bin/jpmd build examples/minimal-kanbun.md
+ruby bin/jpmd build examples/linear-kundoku.md
+ruby bin/jpmd build examples/two-file-manuscript.md
 ```
 
 想定される出力:
@@ -84,8 +84,8 @@ Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 - `out/minimal-kanbun.tex`: 確認用に出力された TeX
 - `out/linear-kundoku.pdf`: 縦組訓読試作 PDF
 - `out/linear-kundoku.tex`: 確認用に出力された TeX
-- `out/two-file-manuscript.pdf`: 二ファイル構成サンプルの PDF
-- `out/two-file-manuscript.tex`: 二ファイル構成サンプルの TeX
+- `out/two-file-manuscript.pdf`: 参考文献付き原稿サンプルの PDF
+- `out/two-file-manuscript.tex`: 参考文献付き原稿サンプルの TeX
 
 サンプルスクリプトも使えます。
 
@@ -120,9 +120,9 @@ git clone https://github.com/PPKan/kanbun-parser.git
 cd kanbun-parser
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
-.\bin\jpmd.cmd build .\examples\minimal-kanbun.md -o .\out\minimal-kanbun.pdf --emit-tex .\out\minimal-kanbun.tex
-.\bin\jpmd.cmd build .\examples\linear-kundoku.md -o .\out\linear-kundoku.pdf --emit-tex .\out\linear-kundoku.tex
-.\bin\jpmd.cmd build-pair .\examples\two-file-manuscript.md .\references\sample-zotero.json -o .\out\two-file-manuscript.pdf --emit-tex .\out\two-file-manuscript.tex
+.\bin\jpmd.cmd build .\examples\minimal-kanbun.md
+.\bin\jpmd.cmd build .\examples\linear-kundoku.md
+.\bin\jpmd.cmd build .\examples\two-file-manuscript.md
 ```
 
 PowerShell 用サンプルスクリプト:
@@ -159,8 +159,8 @@ out/variation-suite/report.html
 ## 補足
 
 - `out/` は生成物用ディレクトリであり、Git 管理対象ではありません。
-- 主な CLI コマンドは `build` と `build-pair` です。
+- 主な CLI コマンドは `build` です。
 - 調整項目は `jpmd.yml` と各 Markdown の `jpmd:` frontmatter で上書きできます。
-- 新しく入った人は、出したい版面に合わせて出力先とプリセットを選べます。PDF の保存先は `-o`、版面の系統は `--preset academic` / `--preset linear` で切り替えます。
+- `jpmd build INPUT.md` は追加パラメータ不要で動きます。PDF は既定で `out/<入力ファイル名>.pdf` に出力され、TeX は `jpmd.output.tex` を frontmatter に書いたときだけ出力されます。
 - この枝では組込みプリセット `linear` を追加し、縦組訓読の既定出力として使います。`academic` は横組基準として残しています。
 - 詳細は `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md` を参照してください。
