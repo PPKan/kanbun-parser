@@ -29,8 +29,8 @@ class JPMDConfigTest < Minitest::Test
 
       derived = resolved.fetch("derived")
       assert_equal "academic", resolved.fetch("preset_name")
-      assert_equal 28, derived.fetch("characters_per_line")
-      assert_equal 29, derived.fetch("lines_per_page")
+      assert_equal 30, derived.fetch("characters_per_line")
+      assert_equal 30, derived.fetch("lines_per_page")
       assert_equal File.expand_path("../out/config-inline.tex", __dir__), resolved.fetch("output").fetch("tex_path")
     end
   end
@@ -44,9 +44,9 @@ class JPMDConfigTest < Minitest::Test
 
       derived = resolved.fetch("derived")
       assert_equal "academic", resolved.fetch("preset_name")
-      assert_equal 27, derived.fetch("characters_per_line")
-      assert_equal 26, derived.fetch("lines_per_page")
-      assert_equal "11pt", derived.fetch("body_size")
+      assert_equal 30, derived.fetch("characters_per_line")
+      assert_equal 30, derived.fetch("lines_per_page")
+      assert_equal "12pt", derived.fetch("body_size")
       assert_equal File.expand_path("../out/config-outsourced.tex", __dir__), resolved.fetch("output").fetch("tex_path")
     end
   end

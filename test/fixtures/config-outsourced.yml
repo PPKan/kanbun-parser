@@ -1,11 +1,7 @@
-bibliography: ../../references/sample-zotero.json
-csl: ../../references/word-japanese-note.csl
 preset: academic
 output:
   tex: ../../out/config-outsourced.tex
 layout:
   grid:
-    characters_per_line: 27
-    lines_per_page: 27
-  font:
-    body_size: 11pt
+    characters_per_line: 30
+    lines_per_page: 30

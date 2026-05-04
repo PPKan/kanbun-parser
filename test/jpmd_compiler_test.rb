@@ -217,9 +217,24 @@ class JPMDCompilerTest < Minitest::Test
 
   def test_render_metadata_merges_top_level_metadata_from_outsourced_yaml
     Dir.mktmpdir("jpmd-pandoc-format-") do |dir|
+      settings_path = File.join(dir, "settings.yml")
+      input_path = File.join(dir, "input.md")
       config_path = File.join(dir, "jpmd.yml")
       File.write(config_path, "{}\n", mode: "w:utf-8")
-      input_path = File.expand_path("fixtures/config-outsourced.md", __dir__)
+      File.write(settings_path, <<~YAML, mode: "w:utf-8")
+        bibliography: refs.json
+        csl: refs.csl
+        preset: academic
+      YAML
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        title: Outsourced Metadata Fixture
+        jpmd:
+          config: settings.yml
+        ---
+
+        # Heading
+      MARKDOWN
 
       compiler = compiler_for(input_path, config_path)
       resolved = JPMD::Config.new(
@@ -230,9 +245,9 @@ class JPMDCompilerTest < Minitest::Test
       compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
 
       metadata = YAML.safe_load(compiler.send(:render_metadata, "/tmp/preamble.tex"))
-      assert_equal "Outsourced Config Fixture", metadata["title"]
-      assert_equal File.expand_path("../references/sample-zotero.json", __dir__), metadata["bibliography"]
-      assert_equal File.expand_path("../references/word-japanese-note.csl", __dir__), metadata["csl"]
+      assert_equal "Outsourced Metadata Fixture", metadata["title"]
+      assert_equal File.join(dir, "refs.json"), metadata["bibliography"]
+      assert_equal File.join(dir, "refs.csl"), metadata["csl"]
       refute_includes metadata.keys, "jpmd"
     end
   end
