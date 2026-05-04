@@ -5,6 +5,52 @@ require_relative "test_helper"
 class JPMDConfigTest < Minitest::Test
   include JPMDTestHelper
 
+  def test_fixture_without_jpmd_format_config_uses_defaults
+    with_empty_project_config do |config_path|
+      resolved = JPMD::Config.new(
+        input_path: fixture_path("config-default.md"),
+        config_path: config_path
+      ).resolve
+
+      derived = resolved.fetch("derived")
+      assert_equal "academic", resolved.fetch("preset_name")
+      assert_equal 30, derived.fetch("characters_per_line")
+      assert_equal 30, derived.fetch("lines_per_page")
+      assert_equal "12pt", derived.fetch("body_size")
+    end
+  end
+
+  def test_fixture_with_inline_yaml_config_overrides_defaults
+    with_empty_project_config do |config_path|
+      resolved = JPMD::Config.new(
+        input_path: fixture_path("config-inline.md"),
+        config_path: config_path
+      ).resolve
+
+      derived = resolved.fetch("derived")
+      assert_equal "academic", resolved.fetch("preset_name")
+      assert_equal 28, derived.fetch("characters_per_line")
+      assert_equal 29, derived.fetch("lines_per_page")
+      assert_equal File.expand_path("../out/config-inline.tex", __dir__), resolved.fetch("output").fetch("tex_path")
+    end
+  end
+
+  def test_fixture_with_outsourced_yaml_config_merges_reference_then_inline_overrides
+    with_empty_project_config do |config_path|
+      resolved = JPMD::Config.new(
+        input_path: fixture_path("config-outsourced.md"),
+        config_path: config_path
+      ).resolve
+
+      derived = resolved.fetch("derived")
+      assert_equal "academic", resolved.fetch("preset_name")
+      assert_equal 27, derived.fetch("characters_per_line")
+      assert_equal 26, derived.fetch("lines_per_page")
+      assert_equal "11pt", derived.fetch("body_size")
+      assert_equal File.expand_path("../out/config-outsourced.tex", __dir__), resolved.fetch("output").fetch("tex_path")
+    end
+  end
+
   def test_default_preset_derives_expected_grid
     with_temp_markdown do |input_path, config_path|
       resolved = JPMD::Config.new(
@@ -156,6 +202,46 @@ class JPMDConfigTest < Minitest::Test
       assert_operator derived.fetch("kanjiskip_pt"), :>, 0
       assert_operator derived.fetch("baselineskip_pt"), :>, 0
       assert_operator derived.fetch("baselineskip_pt"), :>, derived.fetch("kanjiskip_pt")
+    end
+  end
+
+  def test_missing_document_referenced_yaml_is_rejected
+    Dir.mktmpdir("jpmd-config-") do |dir|
+      input_path = File.join(dir, "sample.md")
+      config_path = File.join(dir, "jpmd.yml")
+
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        jpmd:
+          config: missing.yml
+        ---
+
+        本文
+      MARKDOWN
+
+      error = assert_raises(JPMD::ValidationError) do
+        JPMD::Config.new(
+          input_path: input_path,
+          config_path: config_path
+        ).resolve
+      end
+
+      assert_match(/Referenced YAML file not found/, error.message)
+    end
+  end
+
+  private
+
+  def fixture_path(name)
+    File.expand_path(File.join("fixtures", name), __dir__)
+  end
+
+  def with_empty_project_config
+    Dir.mktmpdir("jpmd-config-") do |dir|
+      config_path = File.join(dir, "jpmd.yml")
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+      yield config_path
     end
   end
 end

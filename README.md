@@ -47,6 +47,17 @@ If you are new to the repo, treat those examples as starting points rather than 
 
 If your manuscript needs citations, put `bibliography:` and optional `csl:` directly in the Markdown frontmatter. `examples/two-file-manuscript.md` shows the single-file citation workflow.
 
+Shared build settings can stay in a separate YAML file while the CLI remains flagless. Reference it from the document itself:
+
+```yaml
+---
+jpmd:
+  config: settings/academic.yml
+---
+```
+
+Inline `jpmd:` values override referenced YAML, and a document with no `jpmd:` block still uses defaults.
+
 ## Linux Setup
 
 These steps assume a Debian or Ubuntu style machine. The repo vendors the exact Linux font files under `vendor/fonts/`, so Linux builds do not need a Windows font directory.

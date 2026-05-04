@@ -427,7 +427,10 @@ module JPMD
 
     def copy_output_to_transfer_directory
       FileUtils.mkdir_p(transfer_directory)
-      FileUtils.cp(@output_path, File.join(transfer_directory, File.basename(@output_path)))
+      destination = File.join(transfer_directory, File.basename(@output_path))
+      return if File.expand_path(@output_path) == File.expand_path(destination)
+
+      FileUtils.cp(@output_path, destination)
     end
 
     def transfer_directory
@@ -586,57 +589,7 @@ module JPMD
     end
 
     def document_frontmatter_metadata
-      metadata = extract_frontmatter_metadata
-      raise JPMD::ValidationError, "YAML frontmatter in #{@input_path} must decode to a mapping" unless metadata.is_a?(Hash)
-
-      normalize_document_metadata_paths(
-        normalize_hash(metadata.reject { |key, _value| key.to_s == "jpmd" })
-      )
-    end
-
-    def extract_frontmatter_metadata
-      content = File.read(@input_path, mode: "r:utf-8").sub(/\A\uFEFF/, "")
-      match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
-      return {} unless match
-
-      JPMD.safe_yaml_load(match[1])
-    rescue Psych::SyntaxError => e
-      raise JPMD::ValidationError, "Invalid YAML frontmatter in #{@input_path}: #{e.message}"
-    end
-
-    def normalize_document_metadata_paths(metadata)
-      metadata = metadata.dup
-      metadata["bibliography"] = expand_metadata_path_value(metadata["bibliography"]) if metadata.key?("bibliography")
-      metadata["csl"] = expand_metadata_path_value(metadata["csl"]) if metadata.key?("csl")
-      metadata
-    end
-
-    def expand_metadata_path_value(value)
-      case value
-      when String
-        return value if value.empty?
-
-        expand_document_relative_path(value)
-      when Array
-        value.map do |entry|
-          entry.is_a?(String) && !entry.empty? ? expand_document_relative_path(entry) : entry
-        end
-      else
-        value
-      end
-    end
-
-    def normalize_hash(value)
-      case value
-      when Hash
-        value.each_with_object({}) do |(key, nested_value), hash|
-          hash[key.to_s] = normalize_hash(nested_value)
-        end
-      when Array
-        value.map { |item| normalize_hash(item) }
-      else
-        value
-      end
+      JPMD::DocumentMetadata.load(@input_path).reject { |key, _value| key.to_s == "jpmd" }
     end
 
     def tex_path(path)

@@ -14,6 +14,7 @@ module JPMD
   end
 end
 
+require_relative "jpmd/document_metadata"
 require_relative "jpmd/config"
 require_relative "jpmd/compiler"
 require_relative "jpmd/cli"

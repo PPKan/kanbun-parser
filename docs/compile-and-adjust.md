@@ -20,7 +20,8 @@ Settings are applied in this order:
 
 1. built-in preset: `linear` or `academic`
 2. optional project config: `jpmd.yml`
-3. document-local override: `jpmd:` frontmatter
+3. optional YAML files referenced by `jpmd.config`
+4. document-local override: `jpmd:` frontmatter
 
 `jpmd.yml` is optional. A document with no `jpmd:` block still builds with defaults.
 
@@ -51,6 +52,55 @@ Rules:
 - `jpmd.output.pdf` is optional. If omitted, JPMD writes `out/<input-basename>.pdf` from the repo root.
 - `jpmd.output.tex` is optional. If omitted, no TeX file is emitted.
 - Relative paths in `bibliography`, `csl`, and `jpmd.output.*` are resolved relative to the Markdown file.
+
+## Referencing Shared YAML
+
+If a document should stay clean but reuse shared settings, reference YAML from inside the document frontmatter:
+
+```yaml
+---
+title: Sample Title
+jpmd:
+  config: settings/academic.yml
+---
+```
+
+`jpmd.config` can also be a list. Files are merged in order, then the inline `jpmd:` block is applied last:
+
+```yaml
+---
+jpmd:
+  config:
+    - settings/base.yml
+    - settings/print.yml
+  output:
+    pdf: ../transfer/sample.pdf
+---
+```
+
+Referenced YAML may either contain a full `jpmd:` block:
+
+```yaml
+jpmd:
+  preset: academic
+  layout:
+    grid:
+      characters_per_line: 30
+      lines_per_page: 30
+```
+
+or use JPMD keys directly:
+
+```yaml
+preset: academic
+output:
+  tex: ../out/sample.tex
+layout:
+  font:
+    body_size: 11pt
+```
+
+Top-level Pandoc metadata such as `bibliography:` and `csl:` may also live in referenced YAML. Relative paths are resolved from the file that declares them.
 
 ## Per-Document Overrides
 

@@ -80,6 +80,7 @@ operating_notes:
   - out/ is generated and gitignored
   - project defaults are in jpmd.yml
   - document overrides are read from jpmd: YAML frontmatter
+  - shared YAML can be referenced from document frontmatter with jpmd.config
   - bibliography and csl metadata are read from top-level Markdown frontmatter
   - default PDF output is out/<input-basename>.pdf unless jpmd.output.pdf overrides it
   - TeX is emitted only when jpmd.output.tex is set in frontmatter

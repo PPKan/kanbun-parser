@@ -178,8 +178,7 @@ module JPMD
     end
 
     def load_document_config
-      metadata = extract_frontmatter(@input_path)
-      raise JPMD::ValidationError, "YAML frontmatter in #{@input_path} must decode to a mapping" unless metadata.is_a?(Hash)
+      metadata = JPMD::DocumentMetadata.load(@input_path)
 
       jpmd_metadata = metadata.fetch("jpmd", {})
       return {} if jpmd_metadata.nil?
@@ -194,16 +193,6 @@ module JPMD
       JPMD.safe_yaml_load(content)
     rescue Psych::SyntaxError => e
       raise JPMD::ValidationError, "Invalid YAML in #{path}: #{e.message}"
-    end
-
-    def extract_frontmatter(path)
-      content = File.read(path, mode: "r:utf-8").sub(/\A\uFEFF/, "")
-      match = content.match(/\A---\s*\r?\n(.*?)\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/m)
-      return {} unless match
-
-      JPMD.safe_yaml_load(match[1])
-    rescue Psych::SyntaxError => e
-      raise JPMD::ValidationError, "Invalid YAML frontmatter in #{path}: #{e.message}"
     end
 
     def resolve_output_settings(value)

@@ -215,6 +215,28 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_metadata_merges_top_level_metadata_from_outsourced_yaml
+    Dir.mktmpdir("jpmd-pandoc-format-") do |dir|
+      config_path = File.join(dir, "jpmd.yml")
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+      input_path = File.expand_path("fixtures/config-outsourced.md", __dir__)
+
+      compiler = compiler_for(input_path, config_path)
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+
+      metadata = YAML.safe_load(compiler.send(:render_metadata, "/tmp/preamble.tex"))
+      assert_equal "Outsourced Config Fixture", metadata["title"]
+      assert_equal File.expand_path("../references/sample-zotero.json", __dir__), metadata["bibliography"]
+      assert_equal File.expand_path("../references/word-japanese-note.csl", __dir__), metadata["csl"]
+      refute_includes metadata.keys, "jpmd"
+    end
+  end
+
   def test_build_copies_pdf_to_transfer_directory
     with_temp_markdown do |input_path, config_path|
       Dir.mktmpdir("jpmd-transfer-") do |dir|
@@ -246,6 +268,41 @@ class JPMDCompilerTest < Minitest::Test
 
         assert_equal "pdf", File.binread(output_path)
         assert_equal "pdf", File.binread(File.join(transfer_dir, "sample.pdf"))
+      end
+    end
+  end
+
+  def test_build_allows_output_path_inside_transfer_directory
+    with_temp_markdown do |input_path, config_path|
+      Dir.mktmpdir("jpmd-transfer-") do |dir|
+        transfer_dir = File.join(dir, "transfer")
+        output_path = File.join(transfer_dir, "sample.pdf")
+        compiler = JPMD::Compiler.new(
+          input_path: input_path,
+          output_path: output_path,
+          config_path: config_path
+        )
+
+        compiler.stub(:render_template, "template") do
+          compiler.stub(:render_preamble, "preamble") do
+            compiler.stub(:render_metadata, "---\n") do
+              compiler.stub(:run_pandoc, lambda { |input_path:, template_path:, metadata_path:, tex_path:|
+                assert File.file?(input_path)
+                File.write(tex_path, "tex", mode: "w:utf-8")
+              }) do
+                compiler.stub(:run_lualatex, lambda { |tex_path, _workdir|
+                  File.write(tex_path.sub(/\.tex\z/, ".pdf"), "pdf", mode: "wb")
+                }) do
+                  compiler.stub(:transfer_directory, transfer_dir) do
+                    assert_equal output_path, compiler.build
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        assert_equal "pdf", File.binread(output_path)
       end
     end
   end
