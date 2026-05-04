@@ -23,6 +23,10 @@ It is meant for three common workflows:
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
 - `examples/two-file-manuscript.md`: sample manuscript with frontmatter-driven citation metadata
 - `examples/scripts/`: sample build scripts for Linux and Windows
+- `test/fixtures/config-default.md`: 30-character/30-line fixture with no JPMD format config
+- `test/fixtures/config-inline.md`: same fixture configured with inline `jpmd:` YAML
+- `test/fixtures/config-outsourced.md`: same fixture configured through `jpmd.config`
+- `test/fixtures/pdf/`: tracked PDF snapshots for the three config fixtures
 - `filter.lua`: Pandoc filter that converts bracketed spans into kanbun TeX
 - `templates/preamble.tex.erb`: layout and kanbun TeX template
 - `scripts/run_visual_suite.rb`: generates `out/variation-suite/report.html`
@@ -178,6 +182,24 @@ You can also run the sample Windows script:
 powershell -ExecutionPolicy Bypass -File .\examples\scripts\build-windows.ps1
 ```
 
+## Config Fixture PDFs
+
+The repo includes three 30-character/30-line fixture documents that should render the same visible PDF while exercising different configuration sources:
+
+- `test/fixtures/config-default.md`: no JPMD format config, so project defaults apply
+- `test/fixtures/config-inline.md`: inline `jpmd:` YAML
+- `test/fixtures/config-outsourced.md`: external YAML through `jpmd.config`
+
+Build them with:
+
+```bash
+ruby bin/jpmd build test/fixtures/config-default.md
+ruby bin/jpmd build test/fixtures/config-inline.md
+ruby bin/jpmd build test/fixtures/config-outsourced.md
+```
+
+The generated working copies land in `out/`. The tracked snapshot PDFs live in `test/fixtures/pdf/` so `out/` remains generated workspace output.
+
 ## Visual Regression Suite
 
 Generate the variation report with:
@@ -223,7 +245,7 @@ The preview below comes from the academic paper sample rendered with the current
 - The main supported CLI command is `build`.
 - Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
 - `jpmd build INPUT.md` needs no runtime flags. PDF output defaults to `out/<input-basename>.pdf`, while `jpmd.output.tex` can emit TeX for inspection.
-- The branch prototype adds a built-in `linear` preset for vertical kundoku output while keeping `academic` as the horizontal reference preset.
+- The built-in `linear` preset provides vertical kundoku output, while `academic` remains the horizontal reference preset.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 
 ## Further Reading

@@ -17,6 +17,9 @@ examples:
   full_document: examples/academic-paper.md
   kanbun_only: examples/minimal-kanbun.md
   citation_document: examples/two-file-manuscript.md
+  config_default: test/fixtures/config-default.md
+  config_inline: test/fixtures/config-inline.md
+  config_outsourced: test/fixtures/config-outsourced.md
   linux_script: examples/scripts/build-linux.sh
   windows_script: examples/scripts/build-windows.ps1
 
@@ -67,6 +70,11 @@ verification:
     - ruby bin/jpmd build examples/minimal-kanbun.md
     - ruby bin/jpmd build examples/academic-paper.md
     - ruby bin/jpmd build examples/two-file-manuscript.md
+  config_fixture_builds:
+    - ruby bin/jpmd build test/fixtures/config-default.md
+    - ruby bin/jpmd build test/fixtures/config-inline.md
+    - ruby bin/jpmd build test/fixtures/config-outsourced.md
+    - tracked_snapshots: test/fixtures/pdf
   sample_builds_windows:
     - .\\bin\\jpmd.cmd build .\\examples\\minimal-kanbun.md
     - .\\bin\\jpmd.cmd build .\\examples\\academic-paper.md
@@ -78,6 +86,7 @@ verification:
 operating_notes:
   - run commands from repo root
   - out/ is generated and gitignored
+  - tracked fixture PDFs belong in test/fixtures/pdf, not out/
   - project defaults are in jpmd.yml
   - document overrides are read from jpmd: YAML frontmatter
   - shared YAML can be referenced from document frontmatter with jpmd.config
