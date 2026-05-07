@@ -4,6 +4,7 @@ require "yaml"
 
 module JPMD
   class Config
+    APP_ROOT = File.expand_path("../..", __dir__)
     A4_WIDTH_PT = 210.0 * 72.27 / 25.4
     A4_HEIGHT_PT = 297.0 * 72.27 / 25.4
 
@@ -117,6 +118,7 @@ module JPMD
 
     PROJECT_DEFAULTS = {
       "default_preset" => "academic",
+      "default_csl" => File.join(APP_ROOT, "references", "word-japanese-note.csl"),
       "presets" => {}
     }.freeze
 
@@ -142,6 +144,7 @@ module JPMD
       document_config = load_document_config
 
       output = resolve_output_settings(document_config.delete("output"))
+      csl = resolve_csl_path(document_config.delete("csl"), project_config["default_csl"])
 
       preset_name = @cli_preset ||
         string_or_nil(document_config.delete("preset")) ||
@@ -160,7 +163,8 @@ module JPMD
         "project_root" => project_root,
         "settings" => merged,
         "derived" => validate_and_derive(merged),
-        "output" => output
+        "output" => output,
+        "csl" => csl
       }
     end
 
@@ -205,6 +209,14 @@ module JPMD
         "pdf_path" => resolve_output_path(output["pdf"]) || default_pdf_output_path,
         "tex_path" => resolve_output_path(output["tex"])
       }
+    end
+
+    def resolve_csl_path(document_value, project_value)
+      value = document_value || project_value
+      return nil if value.nil?
+
+      path = required_string(value, "csl path")
+      File.expand_path(path, project_root)
     end
 
     def resolve_output_path(value)

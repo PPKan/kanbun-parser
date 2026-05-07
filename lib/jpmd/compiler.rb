@@ -48,6 +48,7 @@ module JPMD
         cli_preset: @preset_name
       ).resolve
 
+      @config = resolved
       @settings = resolved.fetch("settings")
       @derived = resolved.fetch("derived")
       @output_path ||= resolved.fetch("output").fetch("pdf_path")
@@ -318,6 +319,7 @@ module JPMD
     def render_metadata(preamble_path)
       margins = @settings.fetch("layout").fetch("margins")
       document_metadata = document_frontmatter_metadata.dup
+      document_metadata["csl"] ||= @config.fetch("csl", nil) if @config
       header_includes = Array(document_metadata.delete("header-includes"))
 
       metadata = document_metadata.merge(

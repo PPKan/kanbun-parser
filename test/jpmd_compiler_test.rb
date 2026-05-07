@@ -215,6 +215,23 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_metadata_uses_default_csl_when_document_does_not_specify_one
+    with_temp_markdown do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+      compiler.instance_variable_set(:@config, resolved)
+
+      metadata = YAML.safe_load(compiler.send(:render_metadata, "/tmp/preamble.tex"))
+
+      assert_equal File.join(JPMD::Compiler::APP_ROOT, "references", "word-japanese-note.csl"), metadata.fetch("csl")
+    end
+  end
+
   def test_render_metadata_merges_top_level_metadata_from_outsourced_yaml
     Dir.mktmpdir("jpmd-pandoc-format-") do |dir|
       settings_path = File.join(dir, "settings.yml")

@@ -69,6 +69,17 @@ class JPMDConfigTest < Minitest::Test
     end
   end
 
+  def test_default_csl_is_resolved_from_project_config
+    with_temp_markdown do |input_path, config_path|
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+
+      assert_equal File.join(JPMD::Compiler::APP_ROOT, "references", "word-japanese-note.csl"), resolved.fetch("csl")
+    end
+  end
+
   def test_document_overrides_change_layout
     frontmatter = {
       "layout" => {
