@@ -21,12 +21,21 @@
 \setlength{\parskip}{0pt}
 \interfootnotelinepenalty=10000
 <% else %>
+\newif\ifjpmdfirstmarkdownsection
+\jpmdfirstmarkdownsectiontrue
+\newcommand{\jpmdmarkdownsectionbreak}{%
+  \ifjpmdfirstmarkdownsection
+    \global\jpmdfirstmarkdownsectionfalse
+  \else
+    \newpage
+  \fi
+}
 \titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
 \titlespacing*{\section}{0pt}{1\baselineskip}{0pt}
-\titleformat{\subsection}{\normalfont\bfseries\filcenter}{}{0pt}{}
-\titlespacing*{\subsection}{0pt}{0.9\baselineskip}{0pt}
+\titleformat{\subsection}{\normalfont\bfseries\filcenter}{}{0pt}{\jpmdmarkdownsectionbreak}
+\titlespacing*{\subsection}{0pt}{0.9\baselineskip}{2em}
 \titleformat{\subsubsection}{\normalfont\bfseries\filcenter}{}{0pt}{}
-\titlespacing*{\subsubsection}{0pt}{0.75\baselineskip}{0pt}
+\titlespacing*{\subsubsection}{0pt}{0.75\baselineskip}{1em}
 \titleformat{\paragraph}{\normalfont\bfseries}{\theparagraph}{1em}{}
 \titlespacing*{\paragraph}{0pt}{0.75\baselineskip}{0.35\baselineskip}
 \titleformat{\subparagraph}{\normalfont}{\thesubparagraph}{1em}{}
