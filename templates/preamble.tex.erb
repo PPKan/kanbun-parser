@@ -5,6 +5,14 @@
 \newcommand{\jpmdwritingmode}{<%= writing_mode %>}
 
 \usepackage{titlesec}
+\newcommand{\jpmdcenteredheading}[1]{%
+  \makebox[\linewidth][c]{%
+    \begingroup
+    \ltjsetparameter{kanjiskip=0pt plus 0pt minus 0pt}%
+    #1%
+    \endgroup
+  }%
+}
 <% if writing_mode == "tate" %>
 \titleformat{\section}{\normalfont\bfseries\Large}{}{0pt}{}
 \titlespacing*{\section}{0pt}{2\zw}{1\zw}
@@ -21,9 +29,9 @@
 \setlength{\parskip}{0pt}
 \interfootnotelinepenalty=10000
 <% else %>
-\titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{}
+\titleformat{\section}{\normalfont\bfseries\fontsize{14pt}{16.8pt}\selectfont}{}{0pt}{\jpmdcenteredheading}
 \titlespacing*{\section}{0pt}{1\baselineskip}{0pt}
-\titleformat{\subsection}{\normalfont\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsection}{\normalfont\bfseries}{}{0pt}{\jpmdcenteredheading}
 \titlespacing*{\subsection}{0pt}{0.9\baselineskip}{0pt}
 \titleformat{\subsubsection}{\normalfont\bfseries}{\thesubsubsection}{1em}{}
 \titlespacing*{\subsubsection}{0pt}{0.75\baselineskip}{0pt}
