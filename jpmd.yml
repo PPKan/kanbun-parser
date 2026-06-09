@@ -4,9 +4,9 @@ presets:
   academic:
     layout:
       margins:
-        top: 2.5cm
+        top: 3cm
         right: 3cm
-        bottom: 2.5cm
+        bottom: 2cm
         left: 3cm
       grid:
         characters_per_line: 30
