@@ -2,6 +2,7 @@
 
 require "erb"
 require "fileutils"
+require "json"
 require "open3"
 require "pathname"
 require "rbconfig"
@@ -61,7 +62,7 @@ module JPMD
         pandoc_input_path = prepare_pandoc_input(tmpdir)
         template_path = write_file(tmpdir, "template.tex", render_template)
         preamble_path = write_file(tmpdir, "preamble.tex", render_preamble)
-        metadata_path = write_file(tmpdir, "metadata.yml", render_metadata(preamble_path))
+        metadata_path = write_file(tmpdir, "metadata.yml", render_metadata(preamble_path, tmpdir: tmpdir))
         tex_basename = "#{File.basename(@output_path, ".pdf")}.tex"
         tex_path = File.join(tmpdir, tex_basename)
 
@@ -316,10 +317,11 @@ module JPMD
       File.expand_path(value)
     end
 
-    def render_metadata(preamble_path)
+    def render_metadata(preamble_path, tmpdir: nil)
       margins = @settings.fetch("layout").fetch("margins")
       document_metadata = document_frontmatter_metadata.dup
       document_metadata["csl"] ||= @config.fetch("csl", nil) if @config
+      document_metadata = prepare_bibliography_metadata(document_metadata, tmpdir) if tmpdir
       header_includes = Array(document_metadata.delete("header-includes"))
 
       metadata = document_metadata.merge(
@@ -336,6 +338,109 @@ module JPMD
       )
 
       YAML.dump(metadata)
+    end
+
+    def prepare_bibliography_metadata(metadata, tmpdir)
+      bibliography = metadata["bibliography"]
+      return metadata unless bibliography
+
+      entries = bibliography.is_a?(Array) ? bibliography : [bibliography]
+      converted_entries = entries.each_with_index.map do |entry, index|
+        prepare_bibliography_entry(entry, tmpdir, index)
+      end
+
+      metadata.merge(
+        "bibliography" => bibliography.is_a?(Array) ? converted_entries : converted_entries.first
+      )
+    end
+
+    def prepare_bibliography_entry(entry, tmpdir, index)
+      return entry unless entry.is_a?(String) && !entry.empty?
+
+      path = expand_document_relative_path(entry)
+      return entry unless File.file?(path) && File.extname(path).downcase == ".json"
+
+      data = JSON.parse(File.read(path, mode: "r:utf-8"))
+      converted = convert_bibliography_dates(data)
+      output_path = File.join(tmpdir, "bibliography-#{index}.json")
+      File.write(output_path, JSON.pretty_generate(converted), mode: "w:utf-8")
+      output_path
+    rescue JSON::ParserError
+      entry
+    end
+
+    def convert_bibliography_dates(data)
+      case data
+      when Array
+        data.map { |item| convert_bibliography_item_dates(item) }
+      when Hash
+        convert_bibliography_item_dates(data)
+      else
+        data
+      end
+    end
+
+    def convert_bibliography_item_dates(item)
+      return item unless item.is_a?(Hash)
+
+      item.dup.tap do |converted|
+        %w[issued accessed].each do |key|
+          literal = japanese_date_literal(converted[key])
+          converted[key] = { "literal" => literal } if literal
+        end
+      end
+    end
+
+    def japanese_date_literal(date)
+      return nil unless date.is_a?(Hash)
+      return nil if date["literal"]
+
+      first_part = date["date-parts"]&.first
+      return nil unless first_part.is_a?(Array)
+
+      year = first_part[0]
+      return nil if year.nil? || year.to_s.empty?
+
+      month = first_part[1]
+      literal = "#{kanji_digits(year)}年"
+      literal += "#{kanji_month(month)}月" unless month.nil? || month.to_s.empty?
+      literal
+    end
+
+    def kanji_digits(value)
+      value.to_s.each_char.map do |char|
+        case char
+        when "0" then "〇"
+        when "1" then "一"
+        when "2" then "二"
+        when "3" then "三"
+        when "4" then "四"
+        when "5" then "五"
+        when "6" then "六"
+        when "7" then "七"
+        when "8" then "八"
+        when "9" then "九"
+        else char
+        end
+      end.join
+    end
+
+    def kanji_month(value)
+      month = Integer(value.to_s, 10)
+      case month
+      when 1..9
+        kanji_digits(month)
+      when 10
+        "十"
+      when 11
+        "十一"
+      when 12
+        "十二"
+      else
+        value.to_s
+      end
+    rescue ArgumentError
+      value.to_s
     end
 
     def run_pandoc(input_path:, template_path:, metadata_path:, tex_path:)

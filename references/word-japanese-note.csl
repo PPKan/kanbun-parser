@@ -18,10 +18,10 @@
   </locale>
   <macro name="contributors">
     <names variable="author">
-      <name delimiter=", " initialize-with=""/>
+      <name delimiter="、" initialize-with=""/>
       <substitute>
         <names variable="editor" suffix="（校注）">
-          <name delimiter=", " initialize-with=""/>
+          <name delimiter="、" initialize-with=""/>
         </names>
         <text variable="title"/>
       </substitute>
@@ -53,16 +53,15 @@
   <macro name="year">
     <choose>
       <if variable="issued">
-        <date variable="issued">
-          <date-part name="year"/>
-        </date>
+        <date variable="issued"/>
       </if>
       <else-if variable="accessed">
-        <date variable="accessed">
-          <date-part name="year"/>
-        </date>
+        <date variable="accessed"/>
       </else-if>
     </choose>
+  </macro>
+  <macro name="issued-date">
+    <date variable="issued"/>
   </macro>
   <macro name="publication">
     <choose>
@@ -75,10 +74,7 @@
       <else-if variable="publisher issued">
         <group prefix="（" suffix="）" delimiter="、">
           <text variable="publisher"/>
-          <date variable="issued">
-            <date-part name="year"/>
-            <date-part name="month" prefix="." form="numeric-leading-zeros"/>
-          </date>
+          <text macro="issued-date"/>
         </group>
       </else-if>
       <else-if variable="publisher">

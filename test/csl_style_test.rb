@@ -5,13 +5,13 @@ require "rexml/xpath"
 require_relative "test_helper"
 
 class CSLStyleTest < Minitest::Test
-  def test_contributors_use_comma_separated_names
+  def test_contributors_use_japanese_list_delimiter
     style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
     author_name = REXML::XPath.first(style, "//*[local-name()='macro' and @name='contributors']/*[local-name()='names' and @variable='author']/*[local-name()='name']")
     editor_name = REXML::XPath.first(style, "//*[local-name()='macro' and @name='contributors']/*[local-name()='names' and @variable='author']/*[local-name()='substitute']/*[local-name()='names' and @variable='editor']/*[local-name()='name']")
 
-    assert_equal ", ", author_name.attributes["delimiter"]
-    assert_equal ", ", editor_name.attributes["delimiter"]
+    assert_equal "、", author_name.attributes["delimiter"]
+    assert_equal "、", editor_name.attributes["delimiter"]
   end
 
   def test_editor_substitute_adds_kochu_suffix

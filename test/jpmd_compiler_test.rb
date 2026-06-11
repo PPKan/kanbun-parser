@@ -232,6 +232,56 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_metadata_uses_temporary_bibliography_with_japanese_date_literals
+    Dir.mktmpdir("jpmd-bibliography-") do |dir|
+      input_path = File.join(dir, "input.md")
+      config_path = File.join(dir, "jpmd.yml")
+      refs_path = File.join(dir, "refs.json")
+
+      File.write(refs_path, <<~JSON, mode: "w:utf-8")
+        [
+          {
+            "id": "book2008",
+            "type": "book",
+            "title": "Sample Book",
+            "issued": { "date-parts": [[2008]] }
+          },
+          {
+            "id": "article1996",
+            "type": "article-journal",
+            "title": "Sample Article",
+            "issued": { "date-parts": [[1996, 3, 12]] }
+          }
+        ]
+      JSON
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        bibliography: refs.json
+        ---
+
+        # Heading
+      MARKDOWN
+      File.write(config_path, "default_preset: academic\n", mode: "w:utf-8")
+
+      compiler = compiler_for(input_path, config_path)
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+      compiler.instance_variable_set(:@config, resolved)
+
+      metadata = YAML.safe_load(compiler.send(:render_metadata, "/tmp/preamble.tex", tmpdir: dir))
+      converted = JSON.parse(File.read(metadata.fetch("bibliography"), mode: "r:utf-8"))
+
+      refute_equal refs_path, metadata.fetch("bibliography")
+      assert_equal({ "literal" => "二〇〇八年" }, converted[0].fetch("issued"))
+      assert_equal({ "literal" => "一九九六年三月" }, converted[1].fetch("issued"))
+      assert_includes File.read(refs_path, mode: "r:utf-8"), '"date-parts": [[1996, 3, 12]]'
+    end
+  end
+
   def test_render_metadata_merges_top_level_metadata_from_outsourced_yaml
     Dir.mktmpdir("jpmd-pandoc-format-") do |dir|
       settings_path = File.join(dir, "settings.yml")
