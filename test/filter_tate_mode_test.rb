@@ -140,6 +140,14 @@ class FilterTateModeTest < Minitest::Test
             "editor": [{ "family": "小島", "given": "憲之" }],
             "publisher": "小学館",
             "issued": { "literal": "一九九四年" }
+          },
+          {
+            "id": "bunso",
+            "type": "book",
+            "title": "菅家文草注釈",
+            "author": [{ "family": "文草の会", "given": "" }],
+            "publisher": "勉誠出版",
+            "issued": { "literal": "二〇一四年" }
           }
         ]
       JSON
@@ -153,6 +161,10 @@ class FilterTateModeTest < Minitest::Test
         First [@hakushi, vol. 108, p. 176-177]
 
         Second [@manyo, vol.6, p.122-123]
+
+        Third [@hakushi, vol.2 p.56]
+
+        Fourth [@bunso, vol. 上, p.16]
       MARKDOWN
 
       stdout, status = Open3.capture2(
@@ -167,6 +179,8 @@ class FilterTateModeTest < Minitest::Test
       assert status.success?, stdout
       assert_includes stdout, "岡村繁（校注）『白氏文集』108（明治書院、一九八八年）176-177頁。"
       assert_includes stdout, "小島憲之（校注）『萬葉集』6（小学館、一九九四年）122-123頁。"
+      assert_includes stdout, "岡村繁（校注）『白氏文集』2（明治書院、一九八八年）56頁。"
+      assert_includes stdout, "文草の会『菅家文草注釈』上（勉誠出版、二〇一四年）16頁。"
       refute_includes stdout, "p."
       refute_includes stdout, "pp."
     end

@@ -154,7 +154,7 @@ end
 
 local function normalize_spaces(str)
   return tostring(str or "")
-    :gsub("\194\160", " ")
+    :gsub(string.char(194, 160), " ")
     :gsub("%s+", " ")
     :gsub("^%s+", "")
     :gsub("%s+$", "")
@@ -164,9 +164,15 @@ local function volume_page_locator(suffix)
   local text = normalize_spaces(pandoc.utils.stringify(suffix or {}))
   text = text:gsub("^,%s*", "")
 
-  local volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,%s*[Pp][Pp]%.?%s*(.+)$")
+  local volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,?%s*[Pp][Pp]%.?%s*(.+)$")
   if volume == nil then
-    volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,%s*[Pp]%.?%s*(.+)$")
+    volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,?%s*[Pp]%.?%s*(.+)$")
+  end
+  if volume == nil then
+    volume, pages = text:match("^([^,%s]+)%s+[Pp][Pp]%.?%s*(.+)$")
+  end
+  if volume == nil then
+    volume, pages = text:match("^([^,%s]+)%s+[Pp]%.?%s*(.+)$")
   end
 
   if volume == nil or pages == nil then
@@ -204,7 +210,7 @@ local function note_text(note)
 end
 
 local function volume_page_note(text, locator)
-  local before_publication, publication = normalize_spaces(text):match("^(.*)(（[^（）]+）)")
+  local before_publication, publication = normalize_spaces(text):match("^(.*)(（.-）)")
   if before_publication == nil or publication == nil then
     return nil
   end
