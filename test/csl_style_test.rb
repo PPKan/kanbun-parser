@@ -50,6 +50,15 @@ class CSLStyleTest < Minitest::Test
     refute_nil year_text
   end
 
+  def test_webpage_year_adds_access_marker
+    style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
+    issued_date = REXML::XPath.first(style, "//*[local-name()='macro' and @name='year']//*[local-name()='date' and @variable='issued']")
+    accessed_date = REXML::XPath.first(style, "//*[local-name()='macro' and @name='year']//*[local-name()='date' and @variable='accessed']")
+
+    assert_equal "閲", issued_date.attributes["suffix"]
+    assert_equal "閲", accessed_date.attributes["suffix"]
+  end
+
   def test_article_journal_publication_uses_journal_volume_issue_and_date
     style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
     article_publication = REXML::XPath.first(style, "//*[local-name()='macro' and @name='publication']/*[local-name()='choose']/*[local-name()='else-if' and @type='article-journal']/*[local-name()='text' and @macro='journal-publication']")

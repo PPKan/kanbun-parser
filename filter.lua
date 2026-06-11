@@ -152,6 +152,92 @@ function SoftBreak()
   return pandoc.LineBreak()
 end
 
+local function normalize_spaces(str)
+  return tostring(str or "")
+    :gsub("\194\160", " ")
+    :gsub("%s+", " ")
+    :gsub("^%s+", "")
+    :gsub("%s+$", "")
+end
+
+local function volume_page_locator(suffix)
+  local text = normalize_spaces(pandoc.utils.stringify(suffix or {}))
+  text = text:gsub("^,%s*", "")
+
+  local volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,%s*[Pp][Pp]%.?%s*(.+)$")
+  if volume == nil then
+    volume, pages = text:match("^[Vv]ol%.%s*([^,%s]+)%s*,%s*[Pp]%.?%s*(.+)$")
+  end
+
+  if volume == nil or pages == nil then
+    return nil
+  end
+
+  return {
+    volume = normalize_spaces(volume),
+    pages = normalize_spaces(pages)
+  }
+end
+
+local function inlines_from_text(text)
+  local inlines = {}
+  local first = true
+
+  for word in normalize_spaces(text):gmatch("%S+") do
+    if not first then
+      table.insert(inlines, pandoc.Space())
+    end
+
+    table.insert(inlines, pandoc.Str(word))
+    first = false
+  end
+
+  if #inlines == 0 then
+    return { pandoc.Str("") }
+  end
+
+  return inlines
+end
+
+local function note_text(note)
+  return normalize_spaces(pandoc.utils.stringify(note.content or {}))
+end
+
+local function volume_page_note(text, locator)
+  local before_publication, publication = normalize_spaces(text):match("^(.*)(（[^（）]+）)")
+  if before_publication == nil or publication == nil then
+    return nil
+  end
+
+  return normalize_spaces(before_publication) .. locator.volume .. publication .. locator.pages .. "頁。"
+end
+
+function Cite(cite)
+  if #(cite.citations or {}) ~= 1 then
+    return nil
+  end
+
+  local locator = volume_page_locator(cite.citations[1].suffix)
+  if locator == nil then
+    return nil
+  end
+
+  for index, inline in ipairs(cite.content or {}) do
+    if inline.t == "Note" then
+      local transformed = volume_page_note(note_text(inline), locator)
+      if transformed == nil then
+        return nil
+      end
+
+      inline.content = { pandoc.Para(inlines_from_text(transformed)) }
+      cite.content[index] = inline
+      return cite
+    end
+  end
+
+  return nil
+end
+
 local function latex_table_output()
   return FORMAT == "latex" or FORMAT == "beamer"
 end
@@ -376,6 +462,7 @@ return {
     Table = Table,
     HorizontalRule = HorizontalRule,
     SoftBreak = SoftBreak,
+    Cite = Cite,
     Span = Span
   }
 }

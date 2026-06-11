@@ -117,4 +117,58 @@ class FilterTateModeTest < Minitest::Test
       refute_match(/\\cline\{1-3\}\n\\end\{longtable\}/, stdout)
     end
   end
+
+  def test_volume_page_citation_moves_volume_after_title_and_removes_page_label
+    Dir.mktmpdir("jpmd-filter-") do |dir|
+      input_path = File.join(dir, "sample.md")
+      bibliography_path = File.join(dir, "refs.json")
+
+      File.write(bibliography_path, <<~JSON, mode: "w:utf-8")
+        [
+          {
+            "id": "hakushi",
+            "type": "book",
+            "title": "白氏文集",
+            "editor": [{ "family": "岡村", "given": "繁" }],
+            "publisher": "明治書院",
+            "issued": { "literal": "一九八八年" }
+          },
+          {
+            "id": "manyo",
+            "type": "book",
+            "title": "萬葉集",
+            "editor": [{ "family": "小島", "given": "憲之" }],
+            "publisher": "小学館",
+            "issued": { "literal": "一九九四年" }
+          }
+        ]
+      JSON
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        bibliography: #{bibliography_path}
+        csl: #{File.expand_path("../references/word-japanese-note.csl", __dir__)}
+        suppress-bibliography: true
+        ---
+
+        First [@hakushi, vol. 108, p. 176-177]
+
+        Second [@manyo, vol.6, p.122-123]
+      MARKDOWN
+
+      stdout, status = Open3.capture2(
+        "pandoc",
+        input_path,
+        "-f", "markdown+yaml_metadata_block",
+        "--citeproc",
+        "--lua-filter", File.expand_path("../filter.lua", __dir__),
+        "-t", "plain"
+      )
+
+      assert status.success?, stdout
+      assert_includes stdout, "岡村繁（校注）『白氏文集』108（明治書院、一九八八年）176-177頁。"
+      assert_includes stdout, "小島憲之（校注）『萬葉集』6（小学館、一九九四年）122-123頁。"
+      refute_includes stdout, "p."
+      refute_includes stdout, "pp."
+    end
+  end
 end

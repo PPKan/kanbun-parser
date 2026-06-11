@@ -53,10 +53,10 @@
   <macro name="year">
     <choose>
       <if variable="issued">
-        <date variable="issued"/>
+        <date variable="issued" suffix="閲"/>
       </if>
       <else-if variable="accessed">
-        <date variable="accessed"/>
+        <date variable="accessed" suffix="閲"/>
       </else-if>
     </choose>
   </macro>
