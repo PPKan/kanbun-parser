@@ -50,6 +50,24 @@ class CSLStyleTest < Minitest::Test
     refute_nil year_text
   end
 
+  def test_article_journal_publication_uses_journal_volume_issue_and_date
+    style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
+    article_publication = REXML::XPath.first(style, "//*[local-name()='macro' and @name='publication']/*[local-name()='choose']/*[local-name()='else-if' and @type='article-journal']/*[local-name()='text' and @macro='journal-publication']")
+    journal_group = REXML::XPath.first(style, "//*[local-name()='macro' and @name='journal-publication']/*[local-name()='group']")
+    journal_title = REXML::XPath.first(journal_group, ".//*[local-name()='text' and @variable='container-title']")
+    volume_issue = REXML::XPath.first(journal_group, ".//*[local-name()='group' and @delimiter='-']")
+    issued_date = REXML::XPath.first(journal_group, "./*[local-name()='text' and @macro='issued-date']")
+
+    refute_nil article_publication
+    assert_equal "（", journal_group.attributes["prefix"]
+    assert_equal "）", journal_group.attributes["suffix"]
+    assert_equal "、", journal_group.attributes["delimiter"]
+    assert_equal "『", journal_title.attributes["prefix"]
+    assert_equal "』", journal_title.attributes["suffix"]
+    refute_nil volume_issue
+    refute_nil issued_date
+  end
+
   def test_webpage_citations_skip_contributors
     style = REXML::Document.new(File.read(style_path, mode: "r:utf-8"))
     webpage_citation_group = REXML::XPath.first(style, "//*[local-name()='citation']/*[local-name()='layout']/*[local-name()='choose']/*[local-name()='if' and @type='webpage']/*[local-name()='group']")

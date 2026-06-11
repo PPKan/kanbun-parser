@@ -63,6 +63,18 @@
   <macro name="issued-date">
     <date variable="issued"/>
   </macro>
+  <macro name="journal-publication">
+    <group prefix="（" suffix="）" delimiter="、">
+      <group delimiter="">
+        <text variable="container-title" prefix="『" suffix="』"/>
+        <group delimiter="-">
+          <text variable="volume"/>
+          <text variable="issue"/>
+        </group>
+      </group>
+      <text macro="issued-date"/>
+    </group>
+  </macro>
   <macro name="publication">
     <choose>
       <if type="webpage">
@@ -71,6 +83,9 @@
           <text macro="year"/>
         </group>
       </if>
+      <else-if type="article-journal">
+        <text macro="journal-publication"/>
+      </else-if>
       <else-if variable="publisher issued">
         <group prefix="（" suffix="）" delimiter="、">
           <text variable="publisher"/>
