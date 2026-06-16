@@ -36,7 +36,7 @@ library.json
 
 ### 結果
 
-![result](https://github.com/PPKan/kanbun-parser/tree/main/examples/readme-demo/result.png)
+![result](https://raw.githubusercontent.com/PPKan/kanbun-parser/refs/heads/main/examples/readme-demo/result.png)
 
 
 
