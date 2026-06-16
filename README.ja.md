@@ -21,7 +21,7 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 - `examples/academic-paper.md`: 論文形式のサンプル
 - `examples/linear-kundoku.md`: 《馬説》を使った縦組訓読試作
 - `examples/minimal-kanbun.md`: 漢文だけを試す最小サンプル
-- `examples/two-file-manuscript.md`: frontmatter で参考文献を渡すサンプル
+- `examples/two-file-manuscript.md`: 参考文献設定を含むサンプル
 - `examples/scripts/`: Linux / Windows 用サンプルスクリプト
 - `filter.lua`: 漢文注記を TeX に変換する Pandoc フィルタ
 - `templates/preamble.tex.erb`: 組版と漢文注記の TeX テンプレート
@@ -41,7 +41,18 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-文献を使う場合は、`bibliography:` と必要なら `csl:` を Markdown frontmatter に直接書いてください。`examples/two-file-manuscript.md` は単一ファイルで完結する参考文献付き原稿の例です。
+文献を使う場合、もっとも簡単な方法はビルド時に CLI で bibliography を渡すことです。
+
+```bash
+ruby bin/jpmd build manuscript.md \
+  --bibliography library.json \
+  --output out/manuscript.pdf \
+  --suppress-bibliography
+```
+
+PDF 末尾に参考文献を出したい場合は `--render-bibliography` を使います。CSL を指定したい場合は `--csl custom.csl` を追加できます。指定しない場合は、プロジェクト既定の `references/word-japanese-note.csl` が使われます。
+
+原稿自体に文献設定を持たせたい場合は、`bibliography:` と必要なら `csl:` を Markdown frontmatter に書くこともできます。`examples/two-file-manuscript.md` はその形式の例です。
 
 ## Linux セットアップ
 
@@ -160,7 +171,8 @@ out/variation-suite/report.html
 
 - `out/` は生成物用ディレクトリであり、Git 管理対象ではありません。
 - 主な CLI コマンドは `build` です。
-- 調整項目は `jpmd.yml` と各 Markdown の `jpmd:` frontmatter で上書きできます。
-- `jpmd build INPUT.md` は追加パラメータ不要で動きます。PDF は既定で `out/<入力ファイル名>.pdf` に出力され、TeX は `jpmd.output.tex` を frontmatter に書いたときだけ出力されます。
+- 調整項目は `jpmd.yml` と各 Markdown の `jpmd:` frontmatter で上書きできます。CLI フラグは今回のビルドに関する設定として、それらより優先されます。
+- `jpmd build INPUT.md` は既定で `out/<入力ファイル名>.pdf` に出力します。`--output` で PDF パスを指定し、`--tex` で確認用 TeX を出力できます。
+- 文献関連の CLI フラグは `--bibliography`、`--csl`、`--suppress-bibliography`、`--render-bibliography` です。
 - この枝では組込みプリセット `linear` を追加し、縦組訓読の既定出力として使います。`academic` は横組基準として残しています。
 - 詳細は `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md` を参照してください。

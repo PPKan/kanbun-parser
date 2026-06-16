@@ -21,7 +21,7 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 - `examples/academic-paper.md`: 完整論文範例
 - `examples/linear-kundoku.md`: 以《馬説》為底的縱排訓讀試作
 - `examples/minimal-kanbun.md`: 只測漢文的最小範例
-- `examples/two-file-manuscript.md`: 用 frontmatter 直接提供文獻設定的範例
+- `examples/two-file-manuscript.md`: 含文獻設定的範例
 - `examples/scripts/`: Linux / Windows 範例腳本
 - `filter.lua`: Pandoc 過濾器，將漢文標記轉成 TeX
 - `templates/preamble.tex.erb`: 組版與漢文註記模板
@@ -41,7 +41,18 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-如果文件需要文獻引用，請把 `bibliography:` 與必要的 `csl:` 直接寫進 Markdown frontmatter。`examples/two-file-manuscript.md` 現在示範的是單一檔案完成文獻設定的流程。
+如果文件需要文獻引用，最簡單的方式是在編譯時用 CLI 指定 bibliography：
+
+```bash
+ruby bin/jpmd build manuscript.md \
+  --bibliography library.json \
+  --output out/manuscript.pdf \
+  --suppress-bibliography
+```
+
+如果要在 PDF 最後輸出參考文獻，改用 `--render-bibliography`。需要自訂 CSL 時可以加 `--csl custom.csl`；不指定時會使用專案預設的 `references/word-japanese-note.csl`。
+
+如果想讓原稿自帶文獻設定，也可以把 `bibliography:` 與必要的 `csl:` 寫進 Markdown frontmatter。`examples/two-file-manuscript.md` 示範的是這種流程。
 
 ## Linux 設定
 
@@ -160,7 +171,8 @@ out/variation-suite/report.html
 
 - `out/` 是產物目錄，預設不納入 Git。
 - 主要 CLI 指令現在只有 `build`。
-- 全域設定在 `jpmd.yml`，單一文件可用 `jpmd:` frontmatter 覆寫。
-- `jpmd build INPUT.md` 不需要額外參數。PDF 預設輸出到 `out/<輸入檔名>.pdf`，TeX 則只在 frontmatter 的 `jpmd.output.tex` 有設定時才會輸出。
+- 全域設定在 `jpmd.yml`，單一文件可用 `jpmd:` frontmatter 覆寫，CLI 參數會覆蓋兩者中與本次編譯相關的設定。
+- `jpmd build INPUT.md` 會預設輸出到 `out/<輸入檔名>.pdf`。用 `--output` 指定 PDF 路徑，用 `--tex` 輸出中間 TeX。
+- 文獻相關 CLI 參數包括 `--bibliography`、`--csl`、`--suppress-bibliography`、`--render-bibliography`。
 - 這個分支新增了 `linear` 內建 preset，作為縱排訓讀的預設輸出；`academic` 則保留作橫排參考。
 - 更細的說明請看 `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md`。

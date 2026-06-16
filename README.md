@@ -21,7 +21,7 @@ It is meant for three common workflows:
 - `examples/academic-paper.md`: full sample paper
 - `examples/linear-kundoku.md`: vertical kundoku prototype based on 《馬説》
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
-- `examples/two-file-manuscript.md`: sample manuscript with frontmatter-driven citation metadata
+- `examples/two-file-manuscript.md`: sample manuscript with citation metadata
 - `examples/scripts/`: sample build scripts for Linux and Windows
 - `test/fixtures/config-default.md`: 30-character/30-line fixture with no JPMD format config
 - `test/fixtures/config-inline.md`: same fixture configured with inline `jpmd:` YAML
@@ -47,11 +47,22 @@ If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. Tha
 [世]{f="よ" o="ニ"}[有]{f="あ" o="リ" k="二"}[伯]{f="はく"}[樂]{f="らく" k="一"}、[然]{f="しか" o="ル"}[後]{f="のち" o="ニ"}[有]{f="あ" o="リ" k="二"}[千]{f="せん"}[里]{f="り"}[馬]{f="ば" k="一"}。
 ```
 
-If you are new to the repo, treat those examples as starting points rather than fixed output rules. Choose the sample and then adjust `jpmd:` frontmatter for preset, layout, kanbun spacing, and optional TeX emission.
+If you are new to the repo, treat those examples as starting points rather than fixed output rules. Choose the sample and then adjust CLI flags, `jpmd.yml`, or `jpmd:` frontmatter for preset, layout, kanbun spacing, and optional TeX emission.
 
-If your manuscript needs citations, put `bibliography:` and optional `csl:` directly in the Markdown frontmatter. `examples/two-file-manuscript.md` shows the single-file citation workflow.
+If your manuscript needs citations, the simplest workflow is to pass the bibliography at build time:
 
-Shared build settings can stay in a separate YAML file while the CLI remains flagless. Reference it from the document itself:
+```bash
+ruby bin/jpmd build manuscript.md \
+  --bibliography library.json \
+  --output out/manuscript.pdf \
+  --suppress-bibliography
+```
+
+Use `--render-bibliography` instead when you want the bibliography printed at the end of the PDF. You can also pass `--csl custom.csl`, but the project default is already `references/word-japanese-note.csl`.
+
+The same metadata can still live in Markdown frontmatter when you want a self-contained manuscript. `examples/two-file-manuscript.md` shows that workflow.
+
+Shared build settings can stay in a separate YAML file. Reference it from the document itself:
 
 ```yaml
 ---
@@ -61,6 +72,8 @@ jpmd:
 ```
 
 Inline `jpmd:` values override referenced YAML, and a document with no `jpmd:` block still uses defaults.
+
+CLI values override Markdown frontmatter for build-time choices such as output path, bibliography, CSL, preset, and bibliography rendering.
 
 ## Linux Setup
 
@@ -243,8 +256,9 @@ The preview below comes from the academic paper sample rendered with the current
 
 - `out/` is intentionally ignored and should be treated as generated workspace output.
 - The main supported CLI command is `build`.
-- Project defaults come from `jpmd.yml`, and document-local overrides come from `jpmd:` YAML frontmatter.
-- `jpmd build INPUT.md` needs no runtime flags. PDF output defaults to `out/<input-basename>.pdf`, while `jpmd.output.tex` can emit TeX for inspection.
+- Project defaults come from `jpmd.yml`, document-local overrides come from `jpmd:` YAML frontmatter, and CLI flags override both for build-time choices.
+- `jpmd build INPUT.md` writes to `out/<input-basename>.pdf` by default. Use `--output` for a specific PDF path and `--tex` to emit TeX for inspection.
+- Citation-related CLI flags are `--bibliography`, `--csl`, `--suppress-bibliography`, and `--render-bibliography`.
 - The built-in `linear` preset provides vertical kundoku output, while `academic` remains the horizontal reference preset.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 
