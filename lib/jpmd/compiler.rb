@@ -32,12 +32,13 @@ module JPMD
     MS_MINCHO_FILENAME = "msmincho.ttc"
     PMINGLIU_FILENAME = "PMingLiU.ttf"
 
-    def initialize(input_path:, output_path: nil, config_path:, preset_name: nil, emit_tex_path: nil)
+    def initialize(input_path:, output_path: nil, config_path:, preset_name: nil, emit_tex_path: nil, metadata_overrides: {})
       @input_path = File.expand_path(input_path)
       @output_path = output_path && File.expand_path(output_path)
       @config_path = File.expand_path(config_path)
       @preset_name = preset_name
       @emit_tex_path = emit_tex_path && File.expand_path(emit_tex_path)
+      @metadata_overrides = normalize_metadata_overrides(metadata_overrides)
     end
 
     def build
@@ -319,7 +320,7 @@ module JPMD
 
     def render_metadata(preamble_path, tmpdir: nil)
       margins = @settings.fetch("layout").fetch("margins")
-      document_metadata = document_frontmatter_metadata.dup
+      document_metadata = effective_document_metadata.dup
       document_metadata["csl"] ||= @config.fetch("csl", nil) if @config
       document_metadata = prepare_bibliography_metadata(document_metadata, tmpdir) if tmpdir
       header_includes = Array(document_metadata.delete("header-includes"))
@@ -661,7 +662,7 @@ module JPMD
     end
 
     def bibliography_source_paths
-      bibliography = document_frontmatter_metadata["bibliography"]
+      bibliography = effective_document_metadata["bibliography"]
       Array(bibliography).filter_map do |entry|
         next unless entry.is_a?(String) && !entry.empty?
 
@@ -697,6 +698,18 @@ module JPMD
 
     def document_frontmatter_metadata
       JPMD::DocumentMetadata.load(@input_path).reject { |key, _value| key.to_s == "jpmd" }
+    end
+
+    def effective_document_metadata
+      @effective_document_metadata ||= document_frontmatter_metadata.merge(@metadata_overrides)
+    end
+
+    def normalize_metadata_overrides(overrides)
+      return {} if overrides.nil?
+
+      overrides.each_with_object({}) do |(key, value), normalized|
+        normalized[key.to_s] = value
+      end
     end
 
     def tex_path(path)

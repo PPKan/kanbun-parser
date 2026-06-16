@@ -6,7 +6,7 @@ module JPMD
   class CLI
     BUILD_PAIR_RETIREMENT_MESSAGE = <<~TEXT.freeze
       `build-pair` has been retired.
-      Move `bibliography:` and optional `csl:` into the Markdown frontmatter, then run `jpmd build INPUT.md`.
+      Use `jpmd build INPUT.md --bibliography refs.json`, or move `bibliography:` and optional `csl:` into the Markdown frontmatter.
     TEXT
 
     def self.start(argv)
@@ -41,8 +41,40 @@ module JPMD
     private
 
     def build_command
+      options = {
+        bibliography: []
+      }
+
       parser = OptionParser.new do |opts|
-        opts.banner = "Usage: jpmd build INPUT.md"
+        opts.banner = "Usage: jpmd build INPUT.md [options]"
+
+        opts.on("-o", "--output PDF", "Write PDF to this path") do |path|
+          options[:output_path] = expand_cli_path(path)
+        end
+
+        opts.on("--tex TEX", "Also write intermediate TeX to this path") do |path|
+          options[:tex_path] = expand_cli_path(path)
+        end
+
+        opts.on("-b", "--bibliography JSON", "Use bibliography file; may be repeated") do |path|
+          options[:bibliography] << expand_cli_path(path)
+        end
+
+        opts.on("--csl CSL", "Use CSL style file") do |path|
+          options[:csl] = expand_cli_path(path)
+        end
+
+        opts.on("--preset NAME", "Use layout preset") do |name|
+          options[:preset] = name
+        end
+
+        opts.on("--suppress-bibliography", "Do not render bibliography at the end") do
+          options[:suppress_bibliography] = true
+        end
+
+        opts.on("--render-bibliography", "Render bibliography at the end") do
+          options[:suppress_bibliography] = false
+        end
 
         opts.on("-h", "--help", "Show this help") do
           puts opts
@@ -57,7 +89,11 @@ module JPMD
 
       compiler = JPMD::Compiler.new(
         input_path: File.expand_path(input_path, Dir.pwd),
-        config_path: default_config_path
+        output_path: options[:output_path],
+        config_path: default_config_path,
+        preset_name: options[:preset],
+        emit_tex_path: options[:tex_path],
+        metadata_overrides: metadata_overrides(options)
       )
 
       pdf_path = compiler.build
@@ -69,10 +105,22 @@ module JPMD
       File.expand_path("jpmd.yml", Dir.pwd)
     end
 
+    def expand_cli_path(path)
+      File.expand_path(path, Dir.pwd)
+    end
+
+    def metadata_overrides(options)
+      overrides = {}
+      overrides["bibliography"] = options.fetch(:bibliography) unless options.fetch(:bibliography).empty?
+      overrides["csl"] = options.fetch(:csl) if options[:csl]
+      overrides["suppress-bibliography"] = options.fetch(:suppress_bibliography) if options.key?(:suppress_bibliography)
+      overrides
+    end
+
     def root_usage
       <<~TEXT
         Usage:
-          jpmd build INPUT.md
+          jpmd build INPUT.md [options]
       TEXT
     end
   end

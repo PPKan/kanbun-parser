@@ -232,6 +232,49 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_metadata_applies_cli_metadata_overrides
+    Dir.mktmpdir("jpmd-metadata-overrides-") do |dir|
+      input_path = File.join(dir, "input.md")
+      config_path = File.join(dir, "jpmd.yml")
+      cli_refs_path = File.join(dir, "cli-refs.json")
+      cli_csl_path = File.join(dir, "cli-style.csl")
+
+      File.write(input_path, <<~MARKDOWN, mode: "w:utf-8")
+        ---
+        bibliography: document-refs.json
+        csl: document-style.csl
+        suppress-bibliography: false
+        ---
+
+        # Heading
+      MARKDOWN
+      File.write(config_path, "default_preset: academic\n", mode: "w:utf-8")
+
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        config_path: config_path,
+        metadata_overrides: {
+          "bibliography" => [cli_refs_path],
+          "csl" => cli_csl_path,
+          "suppress-bibliography" => true
+        }
+      )
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+      compiler.instance_variable_set(:@config, resolved)
+
+      metadata = YAML.safe_load(compiler.send(:render_metadata, "/tmp/preamble.tex"))
+
+      assert_equal [cli_refs_path], metadata["bibliography"]
+      assert_equal cli_csl_path, metadata["csl"]
+      assert_equal true, metadata["suppress-bibliography"]
+    end
+  end
+
   def test_render_metadata_uses_temporary_bibliography_with_japanese_date_literals
     Dir.mktmpdir("jpmd-bibliography-") do |dir|
       input_path = File.join(dir, "input.md")

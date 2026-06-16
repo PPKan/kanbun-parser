@@ -32,6 +32,65 @@ class JPMDCLITest < Minitest::Test
     assert_equal File.expand_path("jpmd.yml", Dir.pwd), captured.fetch(:config_path)
   end
 
+  def test_build_command_passes_cli_overrides_to_compiler
+    compiler = Object.new
+    compiler.define_singleton_method(:build) { "/tmp/out.pdf" }
+    captured = nil
+
+    JPMD::Compiler.stub(:new, lambda { |**kwargs|
+      captured = kwargs
+      compiler
+    }) do
+      stdout, = capture_io do
+        assert_equal 0, JPMD::CLI.start([
+          "build",
+          "draft.md",
+          "--output", "transfer/draft.pdf",
+          "--tex", "transfer/draft.tex",
+          "--bibliography", "refs.json",
+          "--bibliography", "extra.json",
+          "--csl", "style.csl",
+          "--preset", "linear",
+          "--suppress-bibliography"
+        ])
+      end
+
+      assert_includes stdout, "Wrote /tmp/out.pdf"
+    end
+
+    assert_equal File.expand_path("transfer/draft.pdf", Dir.pwd), captured.fetch(:output_path)
+    assert_equal File.expand_path("transfer/draft.tex", Dir.pwd), captured.fetch(:emit_tex_path)
+    assert_equal "linear", captured.fetch(:preset_name)
+    assert_equal(
+      {
+        "bibliography" => [
+          File.expand_path("refs.json", Dir.pwd),
+          File.expand_path("extra.json", Dir.pwd)
+        ],
+        "csl" => File.expand_path("style.csl", Dir.pwd),
+        "suppress-bibliography" => true
+      },
+      captured.fetch(:metadata_overrides)
+    )
+  end
+
+  def test_build_command_can_force_bibliography_rendering
+    compiler = Object.new
+    compiler.define_singleton_method(:build) { "/tmp/out.pdf" }
+    captured = nil
+
+    JPMD::Compiler.stub(:new, lambda { |**kwargs|
+      captured = kwargs
+      compiler
+    }) do
+      capture_io do
+        assert_equal 0, JPMD::CLI.start(["build", "draft.md", "--render-bibliography"])
+      end
+    end
+
+    assert_equal({ "suppress-bibliography" => false }, captured.fetch(:metadata_overrides))
+  end
+
   def test_build_pair_command_reports_migration_guidance
     _stdout, stderr = capture_io do
       assert_equal 1, JPMD::CLI.start(["build-pair", "draft.md", "library.json"])
