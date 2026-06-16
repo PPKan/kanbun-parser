@@ -47,6 +47,10 @@
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 \fancyfoot[C]{{\rmfamily\fontsize{10pt}{10pt}\selectfont\thepage}}
+\newlength{\jpmdfootnotebottomreserve}
+\setlength{\jpmdfootnotebottomreserve}{4pt}
+\addtolength{\textheight}{-\jpmdfootnotebottomreserve}
+\addtolength{\footskip}{\jpmdfootnotebottomreserve}
 \interfootnotelinepenalty=10000
 \makeatletter
 \renewcommand{\thefootnote}{\arabic{footnote}}
