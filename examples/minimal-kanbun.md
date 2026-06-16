@@ -1,6 +1,6 @@
 ---
 jpmd:
-  preset: linear
+  preset: academic
   output:
     tex: ../out/minimal-kanbun.tex
 ---

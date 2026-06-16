@@ -142,6 +142,8 @@ module JPMD
     def resolve
       project_config = load_project_config
       document_config = load_document_config
+      reject_writing_mode_option!(document_config, "jpmd.layout.writing_mode")
+      reject_project_writing_mode_options!(project_config)
 
       output = resolve_output_settings(document_config.delete("output"))
       csl = resolve_csl_path(document_config.delete("csl"), project_config["default_csl"])
@@ -294,6 +296,26 @@ module JPMD
       end
     end
 
+    def reject_project_writing_mode_options!(project_config)
+      presets = project_config["presets"]
+      return unless presets.is_a?(Hash)
+
+      presets.each do |preset_name, preset|
+        next unless preset.is_a?(Hash)
+
+        reject_writing_mode_option!(preset, "presets.#{preset_name}.layout.writing_mode")
+      end
+    end
+
+    def reject_writing_mode_option!(config, path)
+      return unless config.is_a?(Hash)
+
+      layout = config["layout"]
+      return unless layout.is_a?(Hash) && layout.key?("writing_mode")
+
+      raise JPMD::ValidationError, "#{path} is no longer configurable; use the default horizontal writing mode"
+    end
+
     def parse_physical_dimension(value, path)
       string = string_or_nil(value)
       match = string&.match(PHYSICAL_DIMENSION_PATTERN)
@@ -349,7 +371,7 @@ module JPMD
 
     def resolve_writing_mode(value)
       mode = string_or_nil(value) || "yoko"
-      raise JPMD::ValidationError, "layout.writing_mode must be one of: #{WRITING_MODES.join(", ")}" unless WRITING_MODES.include?(mode)
+      raise JPMD::ValidationError, "Internal preset writing mode must be one of: #{WRITING_MODES.join(", ")}" unless WRITING_MODES.include?(mode)
 
       mode
     end

@@ -9,6 +9,9 @@ class JPMDCLITest < Minitest::Test
     end
 
     assert_includes stdout, "jpmd build INPUT.md"
+    assert_includes stdout, "--bibliography JSON"
+    assert_includes stdout, "--output PDF"
+    assert_includes stdout, "--render-bibliography"
     refute_includes stdout, "build-pair"
   end
 

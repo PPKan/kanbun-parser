@@ -12,14 +12,12 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 
 - 已經有完整 Markdown 文件，要排成日文學術風格 PDF
 - 只想快速把一段漢文編譯出來
-- 用線裝風的縱排欄位試作漢文訓讀版面
 
 ## Repo 主要內容
 
 - `bin/jpmd` / `bin/jpmd.cmd`: CLI 入口
 - `jpmd.yml`: 專案預設版面設定
 - `examples/academic-paper.md`: 完整論文範例
-- `examples/linear-kundoku.md`: 以《馬説》為底的縱排訓讀試作
 - `examples/minimal-kanbun.md`: 只測漢文的最小範例
 - `examples/two-file-manuscript.md`: 含文獻設定的範例
 - `examples/scripts/`: Linux / Windows 範例腳本
@@ -31,9 +29,7 @@ Kanbun Parser 是一個 Ruby CLI，用 Pandoc 與 LuaLaTeX 把 Markdown 編譯�
 
 ## 先用哪個範例
 
-如果你要先做縱排訓讀試作，從 `examples/linear-kundoku.md` 開始。
-
-如果你已經有完整的橫排 Markdown 文章，`examples/academic-paper.md` 仍然是 yoko 參考範例。
+如果你已經有完整的橫排 Markdown 文章，`examples/academic-paper.md` 是主要參考範例。
 
 如果你只是想編譯漢文，從 `examples/minimal-kanbun.md` 開始。這個檔案刻意只保留最基本的漢文語法。
 
@@ -78,7 +74,6 @@ export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 ruby bin/jpmd build examples/minimal-kanbun.md
-ruby bin/jpmd build examples/linear-kundoku.md
 ruby bin/jpmd build examples/two-file-manuscript.md
 ```
 
@@ -86,15 +81,12 @@ ruby bin/jpmd build examples/two-file-manuscript.md
 
 ```text
 Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
-Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 ```
 
 會得到的檔案：
 
 - `out/minimal-kanbun.pdf`: 漢文最小範例的 PDF
 - `out/minimal-kanbun.tex`: 方便檢查的 TeX 輸出
-- `out/linear-kundoku.pdf`: 縱排訓讀試作 PDF
-- `out/linear-kundoku.tex`: 方便檢查的 TeX 輸出
 - `out/two-file-manuscript.pdf`: 含文獻設定範例的 PDF
 - `out/two-file-manuscript.tex`: 含文獻設定範例的 TeX 輸出
 
@@ -132,7 +124,6 @@ cd kanbun-parser
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 .\bin\jpmd.cmd build .\examples\minimal-kanbun.md
-.\bin\jpmd.cmd build .\examples\linear-kundoku.md
 .\bin\jpmd.cmd build .\examples\two-file-manuscript.md
 ```
 
@@ -174,5 +165,5 @@ out/variation-suite/report.html
 - 全域設定在 `jpmd.yml`，單一文件可用 `jpmd:` frontmatter 覆寫，CLI 參數會覆蓋兩者中與本次編譯相關的設定。
 - `jpmd build INPUT.md` 會預設輸出到 `out/<輸入檔名>.pdf`。用 `--output` 指定 PDF 路徑，用 `--tex` 輸出中間 TeX。
 - 文獻相關 CLI 參數包括 `--bibliography`、`--csl`、`--suppress-bibliography`、`--render-bibliography`。
-- 這個分支新增了 `linear` 內建 preset，作為縱排訓讀的預設輸出；`academic` 則保留作橫排參考。
+- 支援的文件 preset 是 `academic`。
 - 更細的說明請看 `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md`。

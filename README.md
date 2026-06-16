@@ -12,14 +12,12 @@ It is meant for three common workflows:
 
 - full Japanese academic-style documents written in Markdown
 - small kanbun-only snippets when you only want to typeset a passage
-- vertical kundoku prototypes rendered in linear tategaki columns
 
 ## What The Repo Contains
 
 - `bin/jpmd` and `bin/jpmd.cmd`: CLI entrypoints for Linux and Windows
 - `jpmd.yml`: project-wide layout defaults
 - `examples/academic-paper.md`: full sample paper
-- `examples/linear-kundoku.md`: vertical kundoku prototype based on 《馬説》
 - `examples/minimal-kanbun.md`: smallest useful kanbun-only sample
 - `examples/two-file-manuscript.md`: sample manuscript with citation metadata
 - `examples/scripts/`: sample build scripts for Linux and Windows
@@ -37,9 +35,7 @@ It is meant for three common workflows:
 
 ## Choose A Starting Example
 
-If you want the new vertical kundoku prototype, start from `examples/linear-kundoku.md`.
-
-If you already have a complete horizontal document, `examples/academic-paper.md` remains the yoko reference sample.
+If you already have a complete horizontal document, `examples/academic-paper.md` remains the reference sample.
 
 If you only want to compile kanbun, start from `examples/minimal-kanbun.md`. That file is intentionally small and focuses only on the kanbun syntax:
 
@@ -124,7 +120,6 @@ ruby -Itest test/jpmd_compiler_test.rb
 
 ```bash
 ruby bin/jpmd build examples/minimal-kanbun.md
-ruby bin/jpmd build examples/linear-kundoku.md
 ruby bin/jpmd build examples/two-file-manuscript.md
 ```
 
@@ -132,15 +127,12 @@ Expected output:
 
 ```text
 Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
-Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 ```
 
 Generated files:
 
 - `out/minimal-kanbun.pdf`: compiled kanbun-only sample
 - `out/minimal-kanbun.tex`: emitted TeX for inspection
-- `out/linear-kundoku.pdf`: compiled vertical kundoku prototype
-- `out/linear-kundoku.tex`: emitted TeX for inspection
 - `out/two-file-manuscript.pdf`: compiled citation-enabled manuscript sample
 - `out/two-file-manuscript.tex`: emitted TeX for inspection
 
@@ -185,7 +177,6 @@ ruby -Itest test/jpmd_compiler_test.rb
 
 ```powershell
 .\bin\jpmd.cmd build .\examples\minimal-kanbun.md
-.\bin\jpmd.cmd build .\examples\linear-kundoku.md
 .\bin\jpmd.cmd build .\examples\two-file-manuscript.md
 ```
 
@@ -259,7 +250,7 @@ The preview below comes from the academic paper sample rendered with the current
 - Project defaults come from `jpmd.yml`, document-local overrides come from `jpmd:` YAML frontmatter, and CLI flags override both for build-time choices.
 - `jpmd build INPUT.md` writes to `out/<input-basename>.pdf` by default. Use `--output` for a specific PDF path and `--tex` to emit TeX for inspection.
 - Citation-related CLI flags are `--bibliography`, `--csl`, `--suppress-bibliography`, and `--render-bibliography`.
-- The built-in `linear` preset provides vertical kundoku output, while `academic` remains the horizontal reference preset.
+- The supported document preset is `academic`.
 - `docs/container-bootstrap.md` is historical bring-up documentation, not the primary quick start.
 
 ## Further Reading

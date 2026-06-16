@@ -8,7 +8,6 @@ Run builds from the repo root:
 
 ```bash
 ruby bin/jpmd build examples/minimal-kanbun.md
-ruby bin/jpmd build examples/linear-kundoku.md
 ruby bin/jpmd build examples/academic-paper.md
 ```
 
@@ -18,7 +17,7 @@ The CLI now needs only the input Markdown path. PDF output defaults to `out/<inp
 
 Settings are applied in this order:
 
-1. built-in preset: `linear` or `academic`
+1. built-in preset: `academic`
 2. optional project config: `jpmd.yml`
 3. optional YAML files referenced by `jpmd.config`
 4. document-local override: `jpmd:` frontmatter
@@ -48,7 +47,7 @@ jpmd:
 Rules:
 
 - `bibliography:` and `csl:` stay at the top level.
-- `jpmd.preset` selects `linear` or `academic`.
+- `jpmd.preset` selects the document preset. The supported document preset is `academic`.
 - `jpmd.output.pdf` is optional. If omitted, JPMD writes `out/<input-basename>.pdf` from the repo root.
 - `jpmd.output.tex` is optional. If omitted, no TeX file is emitted.
 - Relative paths in `bibliography`, `csl`, and `jpmd.output.*` are resolved relative to the Markdown file.
@@ -109,14 +108,13 @@ Use `jpmd:` when you need document-local layout or kanbun adjustments.
 ```yaml
 ---
 jpmd:
-  preset: linear
+  preset: academic
   layout:
-    writing_mode: tate
     grid:
-      characters_per_line: 24
-      lines_per_page: 11
+      characters_per_line: 30
+      lines_per_page: 30
     font:
-      body_size: 14pt
+      body_size: 12pt
   kanbun:
     furigana:
       size: 8pt
@@ -132,7 +130,6 @@ jpmd:
 
 Layout settings:
 
-- `layout.writing_mode`
 - `layout.margins.top`
 - `layout.margins.right`
 - `layout.margins.bottom`
@@ -187,7 +184,6 @@ The build validates settings before LuaLaTeX runs.
 
 Important checks:
 
-- `writing_mode` must be `yoko` or `tate`
 - `characters_per_line` must be an integer and at least `2`
 - `lines_per_page` must be an integer and at least `1`
 - body size must be positive
@@ -230,7 +226,6 @@ out/variation-suite/report.html
 
 The suite covers:
 
-- vertical layout variations
 - baseline kanbun rendering
 - furigana movement
 - kaeriten movement
@@ -238,7 +233,6 @@ The suite covers:
 
 ## Files Worth Editing
 
-- `examples/linear-kundoku.md`
 - `examples/academic-paper.md`
 - `examples/minimal-kanbun.md`
 - `jpmd.yml`

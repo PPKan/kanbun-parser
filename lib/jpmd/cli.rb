@@ -121,6 +121,16 @@ module JPMD
       <<~TEXT
         Usage:
           jpmd build INPUT.md [options]
+
+        Build options:
+          -o, --output PDF             Write PDF to this path
+              --tex TEX                Also write intermediate TeX to this path
+          -b, --bibliography JSON      Use bibliography file; may be repeated
+              --csl CSL                Use CSL style file
+              --preset NAME            Use layout preset
+              --suppress-bibliography  Do not render bibliography at the end
+              --render-bibliography    Render bibliography at the end
+          -h, --help                   Show command help
       TEXT
     end
   end

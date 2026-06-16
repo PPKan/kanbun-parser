@@ -129,6 +129,47 @@ class JPMDConfigTest < Minitest::Test
     end
   end
 
+  def test_document_writing_mode_option_is_rejected
+    frontmatter = {
+      "layout" => {
+        "writing_mode" => "tate"
+      }
+    }
+
+    with_temp_markdown(frontmatter) do |input_path, config_path|
+      error = assert_raises(JPMD::ValidationError) do
+        JPMD::Config.new(
+          input_path: input_path,
+          config_path: config_path
+        ).resolve
+      end
+
+      assert_match(/jpmd\.layout\.writing_mode/, error.message)
+      assert_match(/no longer configurable/, error.message)
+    end
+  end
+
+  def test_project_writing_mode_option_is_rejected
+    with_temp_markdown do |input_path, config_path|
+      File.write(config_path, <<~YAML, mode: "w:utf-8")
+        presets:
+          academic:
+            layout:
+              writing_mode: tate
+      YAML
+
+      error = assert_raises(JPMD::ValidationError) do
+        JPMD::Config.new(
+          input_path: input_path,
+          config_path: config_path
+        ).resolve
+      end
+
+      assert_match(/presets\.academic\.layout\.writing_mode/, error.message)
+      assert_match(/no longer configurable/, error.message)
+    end
+  end
+
   def test_impossible_character_count_is_rejected
     frontmatter = {
       "layout" => {

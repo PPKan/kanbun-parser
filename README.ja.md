@@ -12,14 +12,12 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 
 - Markdown で書いた和文学術文書を PDF に組版する
 - 漢文だけをすぐに試し組みする
-- 縦組の訓読試作を線装風の版面で確認する
 
 ## 主な構成
 
 - `bin/jpmd` / `bin/jpmd.cmd`: CLI エントリポイント
 - `jpmd.yml`: 既定レイアウト設定
 - `examples/academic-paper.md`: 論文形式のサンプル
-- `examples/linear-kundoku.md`: 《馬説》を使った縦組訓読試作
 - `examples/minimal-kanbun.md`: 漢文だけを試す最小サンプル
 - `examples/two-file-manuscript.md`: 参考文献設定を含むサンプル
 - `examples/scripts/`: Linux / Windows 用サンプルスクリプト
@@ -31,9 +29,7 @@ Kanbun Parser は、Markdown を Pandoc と LuaLaTeX 経由で PDF に変換す�
 
 ## どのサンプルから始めるか
 
-縦組の訓読試作を始めるなら、`examples/linear-kundoku.md` を基準にしてください。
-
-完成した横組文書を持っている場合は、`examples/academic-paper.md` が引き続き yoko の基準サンプルです。
+完成した横組文書を持っている場合は、`examples/academic-paper.md` が基準サンプルです。
 
 漢文だけを組みたい場合は `examples/minimal-kanbun.md` を使ってください。最小例は漢文記法だけに絞っています。
 
@@ -78,7 +74,6 @@ export LUALATEX_PATH=/path/to/texlive/2025/bin/x86_64-linux/lualatex
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 ruby bin/jpmd build examples/minimal-kanbun.md
-ruby bin/jpmd build examples/linear-kundoku.md
 ruby bin/jpmd build examples/two-file-manuscript.md
 ```
 
@@ -86,15 +81,12 @@ ruby bin/jpmd build examples/two-file-manuscript.md
 
 ```text
 Wrote /path/to/kanbun-parser/out/minimal-kanbun.pdf
-Wrote /path/to/kanbun-parser/out/linear-kundoku.pdf
 ```
 
 生成されるファイル:
 
 - `out/minimal-kanbun.pdf`: 漢文だけのサンプル PDF
 - `out/minimal-kanbun.tex`: 確認用に出力された TeX
-- `out/linear-kundoku.pdf`: 縦組訓読試作 PDF
-- `out/linear-kundoku.tex`: 確認用に出力された TeX
 - `out/two-file-manuscript.pdf`: 参考文献付き原稿サンプルの PDF
 - `out/two-file-manuscript.tex`: 参考文献付き原稿サンプルの TeX
 
@@ -132,7 +124,6 @@ cd kanbun-parser
 ruby -Itest test/jpmd_config_test.rb
 ruby -Itest test/jpmd_compiler_test.rb
 .\bin\jpmd.cmd build .\examples\minimal-kanbun.md
-.\bin\jpmd.cmd build .\examples\linear-kundoku.md
 .\bin\jpmd.cmd build .\examples\two-file-manuscript.md
 ```
 
@@ -174,5 +165,5 @@ out/variation-suite/report.html
 - 調整項目は `jpmd.yml` と各 Markdown の `jpmd:` frontmatter で上書きできます。CLI フラグは今回のビルドに関する設定として、それらより優先されます。
 - `jpmd build INPUT.md` は既定で `out/<入力ファイル名>.pdf` に出力します。`--output` で PDF パスを指定し、`--tex` で確認用 TeX を出力できます。
 - 文献関連の CLI フラグは `--bibliography`、`--csl`、`--suppress-bibliography`、`--render-bibliography` です。
-- この枝では組込みプリセット `linear` を追加し、縦組訓読の既定出力として使います。`academic` は横組基準として残しています。
+- 対応する文書 preset は `academic` です。
 - 詳細は `docs/dependencies.md`、`docs/compile-and-adjust.md`、`docs/container-bootstrap.md` を参照してください。
