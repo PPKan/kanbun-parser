@@ -16,16 +16,18 @@ class JPMDCompilerTest < Minitest::Test
         previous = ENV["JPMD_WINDOWS_FONT_DIR"]
         ENV["JPMD_WINDOWS_FONT_DIR"] = font_dir
 
-        compiler.stub(:pmingliu_altfont_entries, ['Range={"503C},Font={PMingLiU.ttf},Path={/tmp/fonts/},TateFont={PMingLiU.ttf},YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv}']) do
-          font_setup = compiler.send(:resolve_font_setup)
-          assert_includes font_setup.fetch(:latin), "times.ttf"
-          assert_includes font_setup.fetch(:japanese), "msmincho.ttc"
-          assert_includes font_setup.fetch(:japanese), "BoldFeatures={FakeBold=2}"
-          assert_includes font_setup.fetch(:japanese), "AltFont={"
-          assert_includes font_setup.fetch(:japanese), "PMingLiU.ttf"
-          assert_includes font_setup.fetch(:japanese), "Range={\"503C}"
-          assert_includes font_setup.fetch(:japanese), "YokoFeatures={JFM=jlreq}"
-          assert_includes font_setup.fetch(:japanese), "TateFeatures={JFM=jlreqv}"
+        compiler.stub(:windows?, false) do
+          compiler.stub(:pmingliu_altfont_entries, ['Range={"503C},Font={PMingLiU.ttf},Path={/tmp/fonts/},TateFont={PMingLiU.ttf},YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv}']) do
+            font_setup = compiler.send(:resolve_font_setup)
+            assert_includes font_setup.fetch(:latin), "times.ttf"
+            assert_includes font_setup.fetch(:japanese), "msmincho.ttc"
+            assert_includes font_setup.fetch(:japanese), "BoldFeatures={FakeBold=2}"
+            assert_includes font_setup.fetch(:japanese), "AltFont={"
+            assert_includes font_setup.fetch(:japanese), "PMingLiU.ttf"
+            assert_includes font_setup.fetch(:japanese), "Range={\"503C}"
+            assert_includes font_setup.fetch(:japanese), "YokoFeatures={JFM=jlreq}"
+            assert_includes font_setup.fetch(:japanese), "TateFeatures={JFM=jlreqv}"
+          end
         end
       ensure
         ENV["JPMD_WINDOWS_FONT_DIR"] = previous
@@ -44,6 +46,114 @@ class JPMDCompilerTest < Minitest::Test
       )
 
       assert_equal [0x503C, 0x5167], missing
+    end
+  end
+
+  def test_missing_codepoints_for_fallback_detects_sai_character
+    with_temp_markdown("三九歲\n") do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+
+      missing = compiler.send(
+        :missing_codepoints_for_fallback,
+        File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "msmincho.ttc"),
+        File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "PMingLiU.ttf")
+      )
+
+      assert_includes missing, 0x6B72
+    end
+  end
+
+  def test_font_coverage_probe_uses_ascii_temp_copies_for_sources
+    Dir.mktmpdir("jpmd-nonascii-") do |root|
+      source_dir = File.join(root, "研究")
+      FileUtils.mkdir_p(source_dir)
+      input_path = File.join(source_dir, "sample.md")
+      config_path = File.join(root, "jpmd.yml")
+      File.write(input_path, [0x588E].pack("U*"), mode: "w:utf-8")
+      File.write(config_path, "{}\n", mode: "w:utf-8")
+
+      compiler = compiler_for(input_path, config_path)
+      captured_sources = nil
+      captured_contents = nil
+      status = Object.new
+      status.define_singleton_method(:success?) { true }
+
+      compiler.stub(:resolve_texlua, "texlua") do
+        Open3.stub(:capture3, lambda do |*args|
+          captured_sources = args.drop(4)
+          captured_contents = captured_sources.map { |path| File.read(path, mode: "r:utf-8") }
+          ["588E\n", "", status]
+        end) do
+          missing = compiler.send(
+            :missing_codepoints_for_fallback,
+            File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "msmincho.ttc"),
+            File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "PMingLiU.ttf")
+          )
+
+          assert_equal [0x588E], missing
+        end
+      end
+
+      assert_equal ["source-0.md"], captured_sources.map { |path| File.basename(path) }
+      refute_equal input_path, captured_sources.first
+      assert_equal [[0x588E].pack("U*")], captured_contents
+    end
+  end
+
+  def test_pmingliu_source_can_use_windows_collection_font
+    with_temp_markdown("三九歲\n") do |input_path, config_path|
+      Dir.mktmpdir("jpmd-fonts-") do |font_dir|
+        File.write(File.join(font_dir, "mingliu.ttc"), "", mode: "wb")
+        compiler = compiler_for(input_path, config_path)
+        previous = ENV["JPMD_WINDOWS_FONT_DIR"]
+        ENV["JPMD_WINDOWS_FONT_DIR"] = font_dir
+
+        compiler.stub(:windows?, true) do
+          compiler.stub(:resolve_pmingliu_file, nil) do
+            source = compiler.send(:resolve_pmingliu_source)
+
+            assert_equal File.join(font_dir, "mingliu.ttc"), source.fetch(:probe_path)
+            assert_equal "PMingLiU", source.fetch(:font)
+            refute source.key?(:path)
+          end
+        end
+      ensure
+        ENV["JPMD_WINDOWS_FONT_DIR"] = previous
+      end
+    end
+  end
+
+  def test_pmingliu_altfont_entries_can_render_family_font
+    with_temp_markdown("三九歲\n") do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+      source = {
+        probe_path: File.join(JPMD::Compiler::APP_ROOT, "vendor", "fonts", "PMingLiU.ttf"),
+        font: "PMingLiU"
+      }
+
+      compiler.stub(:missing_codepoints_for_fallback, [0x6B72]) do
+        entries = compiler.send(:pmingliu_altfont_entries, "msmincho.ttc", source)
+
+        assert_equal 1, entries.length
+        assert_includes entries.first, 'Range={"6B72}'
+        assert_includes entries.first, "Font={PMingLiU}"
+        assert_includes entries.first, "TateFont={PMingLiU}"
+        refute_includes entries.first, "Path="
+      end
+    end
+  end
+
+  def test_render_ms_mincho_family_setup_keeps_altfont_entries
+    with_temp_markdown("三九歲\n") do |input_path, config_path|
+      compiler = compiler_for(input_path, config_path)
+      setup = compiler.send(
+        :render_ms_mincho_family_setup,
+        "MS Mincho",
+        altfont_entries: ['Range={"6B72},Font={PMingLiU},TateFont={PMingLiU}']
+      )
+
+      assert_includes setup, "AltFont={"
+      assert_includes setup, "Font={PMingLiU}"
     end
   end
 

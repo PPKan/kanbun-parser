@@ -31,6 +31,7 @@ module JPMD
     MS_MINCHO_ENV_VAR = "JPMD_MS_MINCHO"
     MS_MINCHO_FILENAME = "msmincho.ttc"
     PMINGLIU_FILENAME = "PMingLiU.ttf"
+    PMINGLIU_COLLECTION_FILENAME = "mingliu.ttc"
 
     def initialize(input_path:, output_path: nil, config_path:, preset_name: nil, emit_tex_path: nil, metadata_overrides: {})
       @input_path = File.expand_path(input_path)
@@ -177,11 +178,13 @@ module JPMD
     end
 
     def resolve_japanese_font_setup
-      pmingliu = resolve_pmingliu_file
+      pmingliu = resolve_pmingliu_source
       file = resolve_ms_mincho_file
       return render_ms_mincho_file_setup(file, altfont_entries: pmingliu_altfont_entries(file, pmingliu)) if file
-      return render_ms_mincho_family_setup("MS Mincho") if windows?
-      return render_ms_mincho_family_setup("MS Mincho") if font_family_available?("MS Mincho")
+      family_probe_file = font_family_file("MS Mincho")
+      family_entries = pmingliu_altfont_entries(family_probe_file, pmingliu)
+      return render_ms_mincho_family_setup("MS Mincho", altfont_entries: family_entries) if windows?
+      return render_ms_mincho_family_setup("MS Mincho", altfont_entries: family_entries) if font_family_available?("MS Mincho")
 
       nil
     end
@@ -228,6 +231,46 @@ module JPMD
       nil
     end
 
+    def resolve_pmingliu_source
+      file = resolve_pmingliu_file
+      return pmingliu_file_source(file) if file
+
+      collection = resolve_pmingliu_collection_file
+      return pmingliu_collection_source(collection) if collection
+
+      nil
+    end
+
+    def resolve_pmingliu_collection_file
+      font_dir_candidates.each do |dir|
+        path = File.join(dir, PMINGLIU_COLLECTION_FILENAME)
+        return path if File.file?(path)
+      end
+
+      nil
+    end
+
+    def pmingliu_file_source(path)
+      {
+        probe_path: path,
+        font: File.basename(path),
+        path: "#{tex_path(File.dirname(path))}/"
+      }
+    end
+
+    def pmingliu_family_source(probe_path)
+      {
+        probe_path: probe_path,
+        font: "PMingLiU"
+      }
+    end
+
+    def pmingliu_collection_source(path)
+      return pmingliu_family_source(path) if windows? || font_family_available?("PMingLiU")
+
+      pmingliu_file_source(path)
+    end
+
     def render_times_new_roman_file_setup(files)
       dir = "#{tex_path(File.dirname(files.fetch(:regular)))}/"
 
@@ -242,10 +285,10 @@ module JPMD
       TEX
     end
 
-    def render_ms_mincho_family_setup(font_name)
+    def render_ms_mincho_family_setup(font_name, altfont_entries: [])
       <<~TEX.chomp
         \\setmainjfont[
-      #{indented_tex_options(ms_mincho_option_lines(bold_font: "MS Mincho", altfont_entries: []))}
+      #{indented_tex_options(ms_mincho_option_lines(bold_font: "MS Mincho", altfont_entries: altfont_entries))}
         ]{#{font_name}}
       TEX
     end
@@ -309,6 +352,17 @@ module JPMD
       end
 
       @font_family_names.include?(family_name)
+    end
+
+    def font_family_file(family_name)
+      @font_family_files ||= {}
+      return @font_family_files[family_name] if @font_family_files.key?(family_name)
+
+      stdout, status = Open3.capture2("fc-match", "-f", "%{file}", family_name)
+      path = stdout.strip
+      @font_family_files[family_name] = status.success? && !path.empty? && File.file?(path) ? path : nil
+    rescue Errno::ENOENT
+      @font_family_files[family_name] = nil
     end
 
     def env_file(env_name)
@@ -545,24 +599,26 @@ module JPMD
       TRANSFER_DIR
     end
 
-    def pmingliu_altfont_entries(primary_font_path, fallback_font_path)
-      return [] unless fallback_font_path
+    def pmingliu_altfont_entries(primary_font_path, fallback_source)
+      return [] unless primary_font_path && fallback_source
 
-      codepoints = missing_codepoints_for_fallback(primary_font_path, fallback_font_path)
+      codepoints = missing_codepoints_for_fallback(primary_font_path, fallback_source.fetch(:probe_path))
       return [] if codepoints.empty?
 
-      fallback_dir = "#{tex_path(File.dirname(fallback_font_path))}/"
-      fallback_font = File.basename(fallback_font_path)
       range_literal = codepoint_range_literal(codepoints)
-
-      [[
+      fallback_font = fallback_source.fetch(:font)
+      options = [
         "Range={#{range_literal}}",
-        "Font={#{fallback_font}}",
-        "Path={#{fallback_dir}}",
+        "Font={#{fallback_font}}"
+      ]
+      options << "Path={#{fallback_source.fetch(:path)}}" if fallback_source.key?(:path)
+      options.concat([
         "TateFont={#{fallback_font}}",
         "YokoFeatures={JFM=jlreq}",
         "TateFeatures={JFM=jlreqv}"
-      ].join(",")]
+      ])
+
+      [options.join(",")]
     rescue JPMD::CommandError
       []
     end
@@ -572,18 +628,34 @@ module JPMD
       return [] if source_paths.empty?
 
       script_path = write_font_coverage_script
-      stdout, stderr, status = Open3.capture3(
-        resolve_texlua,
-        script_path,
-        primary_font_path,
-        fallback_font_path,
-        *source_paths
-      )
+      stdout = stderr = status = nil
+      with_font_coverage_source_copies(source_paths) do |probe_paths|
+        stdout, stderr, status = Open3.capture3(
+          resolve_texlua,
+          script_path,
+          primary_font_path,
+          fallback_font_path,
+          *probe_paths
+        )
+      end
       return stdout.lines.map { |line| Integer(line.strip, 16) } if status.success?
 
       raise JPMD::CommandError, "texlua font coverage probe failed:\n#{[stdout, stderr].reject(&:empty?).join("\n")}"
     ensure
       FileUtils.rm_f(script_path) if script_path
+    end
+
+    def with_font_coverage_source_copies(source_paths)
+      Dir.mktmpdir("jpmd-font-coverage-sources-") do |dir|
+        probe_paths = source_paths.each_with_index.map do |path, index|
+          extension = File.extname(path)
+          destination = File.join(dir, "source-#{index}#{extension}")
+          File.binwrite(destination, File.binread(path))
+          destination
+        end
+
+        yield probe_paths
+      end
     end
 
     def write_font_coverage_script
