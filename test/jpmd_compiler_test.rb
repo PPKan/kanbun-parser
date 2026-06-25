@@ -542,12 +542,13 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
-  def test_template_uses_paragraph_based_csl_references_environment
+  def test_template_uses_list_based_csl_references_environment
     template = File.read(File.join(JPMD::Compiler::APP_ROOT, "template.tex"), mode: "r:utf-8")
 
-    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\setlength\{\\parindent\}\{0pt\}/m, template)
-    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\def\\par\{\\hangindent=\\cslhangindent\\oldpar\}/m, template)
-    refute_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\begin\{list\}/m, template)
+    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\begin\{list\}/m, template)
+    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\setlength\{\\leftmargin\}\{\\cslhangindent\}/m, template)
+    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\setlength\{\\itemindent\}\{-1\\cslhangindent\}/m, template)
+    assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\setlength\{\\itemsep\}\{#2\\baselineskip\}/m, template)
   end
 
   def test_template_renders_custom_yaml_title_block
