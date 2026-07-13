@@ -80,6 +80,7 @@ jpmd:
       lines_per_page: 30
     font:
       body_size: 12pt
+    page_numbers: false
   kanbun:
     side:
       gap: 0.10zw

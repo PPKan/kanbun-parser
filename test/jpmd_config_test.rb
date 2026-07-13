@@ -106,6 +106,42 @@ class JPMDConfigTest < Minitest::Test
     end
   end
 
+  def test_document_can_disable_page_numbers
+    frontmatter = {
+      "layout" => {
+        "page_numbers" => false
+      }
+    }
+
+    with_temp_markdown(frontmatter) do |input_path, config_path|
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+
+      assert_equal false, resolved.fetch("derived").fetch("page_numbers")
+    end
+  end
+
+  def test_invalid_page_numbers_value_is_rejected
+    frontmatter = {
+      "layout" => {
+        "page_numbers" => "false"
+      }
+    }
+
+    with_temp_markdown(frontmatter) do |input_path, config_path|
+      error = assert_raises(JPMD::ValidationError) do
+        JPMD::Config.new(
+          input_path: input_path,
+          config_path: config_path
+        ).resolve
+      end
+
+      assert_match(/layout\.page_numbers/, error.message)
+    end
+  end
+
   def test_invalid_negative_shift_is_rejected
     frontmatter = {
       "kanbun" => {

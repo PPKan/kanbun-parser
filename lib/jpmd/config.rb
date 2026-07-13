@@ -248,6 +248,7 @@ module JPMD
 
       characters_per_line = parse_positive_integer(fetch_required(grid, "characters_per_line"), "layout.grid.characters_per_line", minimum: 2)
       lines_per_page = parse_positive_integer(fetch_required(grid, "lines_per_page"), "layout.grid.lines_per_page", minimum: 1)
+      page_numbers = parse_boolean(layout.fetch("page_numbers", writing_mode != "tate"), "layout.page_numbers")
 
       validate_kanbun_dimensions(kanbun)
 
@@ -275,6 +276,7 @@ module JPMD
         "characters_per_line" => characters_per_line,
         "lines_per_page" => lines_per_page,
         "body_size" => fetch_required(font, "body_size"),
+        "page_numbers" => page_numbers,
         "kanjiskip_pt" => kanjiskip_pt,
         "baselineskip_pt" => baselineskip_pt
       }
@@ -354,6 +356,12 @@ module JPMD
       raise JPMD::ValidationError, "#{path} must be at least #{minimum}" unless parsed >= minimum
 
       parsed
+    end
+
+    def parse_boolean(value, path)
+      return value if value == true || value == false
+
+      raise JPMD::ValidationError, "#{path} must be true or false"
     end
 
     def normalize_hash(value)

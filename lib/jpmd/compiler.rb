@@ -141,6 +141,7 @@ module JPMD
         side_min_width: tex_dimension(kanbun.fetch("side").fetch("min_width")),
         body_size: tex_dimension(layout.fetch("font").fetch("body_size")),
         writing_mode: @derived.fetch("writing_mode"),
+        page_numbers: @derived.fetch("page_numbers"),
         tate_kanbun_kumi: kanbun.fetch("kumi", "beta"),
         tate_kanbun_tateaki: tate_kanbun_float(kanbun.fetch("tateaki", 1)),
         tate_kanbun_okuriintrusion: tate_kanbun_float(kanbun.fetch("okuriintrusion", 1)),

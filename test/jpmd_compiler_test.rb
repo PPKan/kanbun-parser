@@ -610,6 +610,28 @@ class JPMDCompilerTest < Minitest::Test
     end
   end
 
+  def test_render_preamble_can_disable_academic_page_numbers
+    with_temp_markdown({ "layout" => { "page_numbers" => false } }) do |input_path, config_path|
+      compiler = JPMD::Compiler.new(
+        input_path: input_path,
+        config_path: config_path
+      )
+
+      resolved = JPMD::Config.new(
+        input_path: input_path,
+        config_path: config_path
+      ).resolve
+      compiler.instance_variable_set(:@settings, resolved.fetch("settings"))
+      compiler.instance_variable_set(:@derived, resolved.fetch("derived"))
+
+      compiler.stub(:resolve_font_setup, { latin: "\\setmainfont{Times New Roman}", japanese: "\\setmainjfont{MS Mincho}" }) do
+        preamble = compiler.send(:render_preamble)
+        assert_includes preamble, "\\pagestyle{fancy}"
+        refute_includes preamble, "\\thepage"
+      end
+    end
+  end
+
   private
 
   def compiler_for(input_path, config_path)
