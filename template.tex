@@ -293,6 +293,21 @@ $endif$
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% jlreq adds the leftover partial character cell to quote's left margin.
+% Preserve its quote settings while omitting that grid-alignment remainder.
+\makeatletter
+\renewenvironment{quote}
+  {\list{}{%
+    \leftmargin=\dimexpr\jlreq@quote@indent\relax
+    \rightmargin=\dimexpr\jlreq@quote@end@indent\relax
+    \labelwidth\z@
+    \itemindent\z@
+    \topsep=\jlreq@speciallength{\jlreq@quote@beforeafter@space}%
+    \listparindent\z@
+  }%
+  \item\relax\jlreq@quote@fontsize}
+  {\endlist}
+\makeatother
 $if(numbersections)$
 \setcounter{secnumdepth}{$if(secnumdepth)$$secnumdepth$$else$5$endif$}
 $else$

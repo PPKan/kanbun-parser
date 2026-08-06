@@ -13,13 +13,13 @@ module JPMD
         "layout" => {
           "writing_mode" => "yoko",
           "margins" => {
-            "top" => "2.5cm",
+            "top" => "3cm",
             "right" => "3cm",
-            "bottom" => "2.5cm",
+            "bottom" => "2cm",
             "left" => "3cm"
           },
           "grid" => {
-            "characters_per_line" => 30,
+            "characters_per_line" => 35,
             "lines_per_page" => 30
           },
           "font" => {

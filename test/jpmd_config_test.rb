@@ -14,7 +14,7 @@ class JPMDConfigTest < Minitest::Test
 
       derived = resolved.fetch("derived")
       assert_equal "academic", resolved.fetch("preset_name")
-      assert_equal 30, derived.fetch("characters_per_line")
+      assert_equal 35, derived.fetch("characters_per_line")
       assert_equal 30, derived.fetch("lines_per_page")
       assert_equal "12pt", derived.fetch("body_size")
     end
@@ -59,13 +59,41 @@ class JPMDConfigTest < Minitest::Test
       ).resolve
 
       derived = resolved.fetch("derived")
-      assert_equal 30, derived.fetch("characters_per_line")
+      assert_equal 35, derived.fetch("characters_per_line")
       assert_equal 30, derived.fetch("lines_per_page")
       assert_equal "12pt", derived.fetch("body_size")
+      assert_equal(
+        {
+          "top" => "3cm",
+          "right" => "3cm",
+          "bottom" => "2cm",
+          "left" => "3cm"
+        },
+        resolved.dig("settings", "layout", "margins")
+      )
       assert_equal File.join(File.dirname(config_path), "out", "sample.pdf"), resolved.fetch("output").fetch("pdf_path")
       assert_nil resolved.fetch("output").fetch("tex_path")
       assert_operator derived.fetch("kanjiskip_pt"), :>, 0
       assert_operator derived.fetch("baselineskip_pt"), :>, 0
+    end
+  end
+
+  def test_missing_project_config_matches_repository_default
+    with_temp_markdown do |input_path, empty_config_path|
+      missing_config_path = File.join(File.dirname(empty_config_path), "missing-jpmd.yml")
+      refute_path_exists missing_config_path
+
+      builtin = JPMD::Config.new(
+        input_path: input_path,
+        config_path: missing_config_path
+      ).resolve
+      repository = JPMD::Config.new(
+        input_path: input_path,
+        config_path: File.expand_path("../jpmd.yml", __dir__)
+      ).resolve
+
+      assert_equal repository.fetch("settings"), builtin.fetch("settings")
+      assert_equal repository.fetch("derived"), builtin.fetch("derived")
     end
   end
 

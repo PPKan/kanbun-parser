@@ -551,6 +551,14 @@ class JPMDCompilerTest < Minitest::Test
     assert_match(/\\newenvironment\{CSLReferences\}\[2\].*?\\setlength\{\\itemsep\}\{#2\\baselineskip\}/m, template)
   end
 
+  def test_template_indents_block_quotes_by_two_japanese_characters
+    template = File.read(File.join(JPMD::Compiler::APP_ROOT, "template.tex"), mode: "r:utf-8")
+
+    assert_match(/\\renewenvironment\{quote\}.*?\\leftmargin=\\dimexpr\\jlreq@quote@indent\\relax/m, template)
+    assert_match(/\\renewenvironment\{quote\}.*?\\rightmargin=\\dimexpr\\jlreq@quote@end@indent\\relax/m, template)
+    refute_match(/\\renewenvironment\{quote\}.*?\\divide\\@tempdimb/m, template)
+  end
+
   def test_template_renders_custom_yaml_title_block
     template = File.read(File.join(JPMD::Compiler::APP_ROOT, "template.tex"), mode: "r:utf-8")
 
